@@ -95,7 +95,7 @@ button:focus-visible {
   padding: 20px;
 }
 
-.header{
+.header, .year_choice{
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
@@ -103,4 +103,23 @@ button:focus-visible {
 
 .title{
   font-style: italic;
+}
+
+
+.month_set{
+  padding-top: 10px;
+  text-align: center;
+ 
+}
+.month_button{
+  width: 4em;
+  border-radius: 0;
+}
+
+.row0{
+  background-color: rgb(253, 218, 223);
+}
+
+.row6{
+  background-color: #c2ebf3;
 }
