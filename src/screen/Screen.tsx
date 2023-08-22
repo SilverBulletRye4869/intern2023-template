@@ -16,8 +16,9 @@ import Header from "./header/Header";
 import Body from "./body/Body";
 
 const Screen = () => {
-  const [year, setYear] = useState(2023);
-  const [month, setMonth] = useState(7);
+  const date = new Date();
+  const [year, setYear] = useState(date.getFullYear());
+  const [month, setMonth] = useState(date.getMonth());
 
   const setTime = (newYear:number, newMonth: number)=>{
     while(newMonth<0){newYear--;newMonth+=12}
