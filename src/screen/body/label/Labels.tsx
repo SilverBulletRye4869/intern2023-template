@@ -1,13 +1,9 @@
 const Labels = () => {
   return(<>
     <div className="labels" key="label">
-      <p className="label">Sunday</p>
-      <p className="label">Monday</p>
-      <p className="label">Tuesday</p>
-      <p className="label">Wednesday</p>
-      <p className="label">Thursday</p>
-      <p className="label">Friday</p>
-      <p className="label">Saturday</p>    
+      {["日","月","火","水","木","金","土"].map((day,i)=>{
+        return(<><p className={`label row${i}`}>{day}</p></>)
+      })} 
     </div>
   </>)
 }
