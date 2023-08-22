@@ -9,7 +9,7 @@ const Week = ({start, end}: { start: number, end: number}) => {
          {
         loop.map((_,i)=>{
           i>=(end-start) ? date=-1 : (date++)
-          return(<><Day date={date}/></>);
+          return(<><Day date={date} row={i}/></>);
         })
       }
       </div>
