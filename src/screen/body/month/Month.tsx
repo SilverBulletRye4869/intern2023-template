@@ -23,7 +23,7 @@ const Month = ({ year, month }: Props) => {
   let startDay: number = -startDayOfWeek;
 
   return (
-    <p className="month" key="month">
+    <div className="month" key="month">
       {loop.map((_, i) => {
         return (
           <Week
@@ -35,7 +35,7 @@ const Month = ({ year, month }: Props) => {
           />
         );
       })}
-    </p>
+    </div>
   );
 };
 
