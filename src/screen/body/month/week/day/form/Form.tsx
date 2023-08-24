@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Button,
@@ -5,54 +7,121 @@ import {
   ButtonGroup,
   Input,
   Textarea,
+  FormControl,
+  FormErrorMessage,
 } from "@chakra-ui/react";
-import TextInput from "./TextInput";
+import TitleInput from "./TitleInput";
 import { useState } from "react";
-import { fieldRefs } from "./PopOverForm";
-import { Schedule } from "../Day";
+import type React from "react";
 
-/* eslint-disable */
+const MEMO_MAX_LENGTH = 255;
+
 type Props = {
-  refs: fieldRefs;
-  onSave: any;
-  onCancel: any;
+  onSave: () => void;
+  onCancel: () => void;
+  title: string;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
+  start: string;
+  setStart: React.Dispatch<React.SetStateAction<string>>;
+  end: string;
+  setEnd: React.Dispatch<React.SetStateAction<string>>;
+  memo: string;
+  setMemo: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Form = ({ refs, onSave, onCancel }: Props) => {
+const Form = ({
+  onSave,
+  onCancel,
+  title,
+  setTitle,
+  start,
+  setStart,
+  end,
+  setEnd,
+  memo,
+  setMemo,
+}: Props) => {
+  const [titleCollectState, setTitleCollectState] = useState(true);
+  const [timeCollectState, setTimeCollectState] = useState(true);
+  let timeCollect: boolean, titleCollect: boolean;
+  timeCollect = titleCollect = true;
+
+  const onChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    setFunc: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    setFunc(event.target.value);
+  };
+
+  const formatCheck = () => {
+    const startTime = start.replace(":", "");
+    const endTime = end.replace(":", "");
+
+    console.log(`${parseInt(startTime)}-${parseInt(endTime)}`);
+    timeCollect =
+      (startTime == "" ? -1 : parseInt(startTime)) <=
+      (endTime == "" ? 3000 : parseInt(endTime));
+
+    titleCollect = title != "";
+    setTimeCollectState(timeCollect);
+    setTitleCollectState(titleCollect);
+    console.log(`${timeCollect.toString()} - ${titleCollect.toString()}`);
+    if (timeCollect && titleCollect) onSave();
+  };
+
   return (
-    <Stack spacing={4}>
-      <Box className="title_form">
-        <Box className="form_font">タイトル</Box>
-        <TextInput id="first-name" ref={refs.title} placeholder="予定名" />
-      </Box>
-      <Box className="time_form">
-        <Box className="form_font">実施時刻</Box>
-        <Input
-          placeholder="Select Date and Time"
-          size="md"
-          type="time"
-          width="40%"
-          ref={refs.start}
-          defaultValue=""
-        />{" "}
-        ~{" "}
-        <Input
-          placeholder="Select Date and Time"
-          size="md"
-          type="time"
-          width="40%"
-          ref={refs.end}
-          defaultValue=""
+    <Box className="form">
+      <Stack spacing={4}>
+        <Box className="title_form">
+          <Box className="form_font">タイトル</Box>
+          <TitleInput
+            value={title}
+            setValue={setTitle}
+            placeholder="予定名"
+            formatCollect={titleCollectState}
+          />
+        </Box>
+        <Box className="time_form">
+          <Box className="form_font">実施時刻</Box>
+          <FormControl isInvalid={!timeCollectState}>
+            <Input
+              placeholder="Select Date and Time"
+              size="md"
+              type="time"
+              width="40%"
+              value={start}
+              onChange={(e) => onChange(e, setStart)}
+            />{" "}
+            ~{" "}
+            <Input
+              placeholder="Select Date and Time"
+              size="md"
+              type="time"
+              width="40%"
+              value={end}
+              onChange={(e) => onChange(e, setEnd)}
+            />
+            {timeCollectState ? (
+              ""
+            ) : (
+              <FormErrorMessage>実施時刻が不適です。</FormErrorMessage>
+            )}
+          </FormControl>
+        </Box>
+        <Textarea
+          placeholder="詳細メモ"
+          value={memo}
+          onChange={(e) => onChange(e, setMemo)}
+          maxLength={MEMO_MAX_LENGTH}
         />
-      </Box>
-      <Textarea placeholder="詳細メモ" ref={refs.memo} />
-      <ButtonGroup display="flex" justifyContent="flex-end">
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={onSave}>Save</Button>
-      </ButtonGroup>
-    </Stack>
+        <ButtonGroup display="flex" justifyContent="flex-end">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button onClick={formatCheck}>Save</Button>
+        </ButtonGroup>
+      </Stack>
+    </Box>
   );
 };
 
