@@ -8,10 +8,10 @@ type Props = {
 
 const Body = ({ year, month }: Props) => {
   return (
-    <p className="body" key="body">
+    <div className="body" key="body">
       <Label />
       <Month year={year} month={month} />
-    </p>
+    </div>
   );
 };
 
