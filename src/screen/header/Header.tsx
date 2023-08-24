@@ -10,7 +10,7 @@ type Props = {
 const Header = ({ year, month, setTime }: Props) => {
   return (
     <div className="header" key="header">
-      <Title />
+      <Title setTime={setTime} />
       <Info year={year} month={month} setTime={setTime} />
     </div>
   );

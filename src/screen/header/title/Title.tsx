@@ -1,9 +1,18 @@
-const Title = () => {
+type Props = {
+  setTime: (year: number, month: number) => void;
+};
+
+const Title = ({ setTime }: Props) => {
+  const date: Date = new Date();
   return (
     <>
-      <p className="title" key="title">
+      <button
+        className="title"
+        key="title"
+        onClick={() => setTime(date.getFullYear(), date.getMonth())}
+      >
         Calender
-      </p>
+      </button>
     </>
   );
 };
