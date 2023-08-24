@@ -95,7 +95,7 @@ button:focus-visible {
   padding: 20px;
 }
 
-.header, .year_choice{
+.header, .year_choice, .schedule_detail_header{
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
@@ -126,7 +126,16 @@ button:focus-visible {
   color: blue;
 }
 
+.today{
+  background-color: #c8ffba;
+  border-color: black;
+  border-width: 3px;
+  z-index: 1000;
+}
 
+.form{
+  color: black !important;
+}
 
 .form_font{
   font-size: 0.6em;
@@ -141,6 +150,16 @@ button:focus-visible {
   height: 75%;
 }
 
-.schedule{
-  background-color: #19fe85;
+
+.schedule_detail{
+  font-size: 0.7em;
+}
+
+.schedule_detail_header{
+  width: 90%;
+}
+
+.schedule_detail_header_button{
+  display: flex;
+  float: left;
 }
