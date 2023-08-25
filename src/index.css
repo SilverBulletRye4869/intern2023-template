@@ -1,3 +1,6 @@
+html{
+  width: 100%;
+}
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -27,9 +30,10 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  text-align: center;
   min-width: 320px;
   min-height: 100vh;
+  width: 100%;
 }
 
 h1 {
@@ -69,9 +73,13 @@ button:focus-visible {
   }
 }
 
+
+.header{
+  min-width: 840px;
+}
 .label, .day{
   background: #fff;
-  border: 1px solid #999;
+  border: 1.3px solid #999;
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -79,7 +87,27 @@ button:focus-visible {
   margin-right: -1px;
   margin-top: -1px;
   text-align: center;
-  width: 170px;
+  width: 120px;
+}
+@media (min-width: 840px) {
+  .label, .day{
+    width: 14%;
+  }
+  body{
+    display: table;
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1240px) {
+  .label, .day{
+    width: 170px;
+  }
+
+  body{
+    display: flex;
+    overflow: visible;
+  }
 }
 
 .label{
@@ -127,10 +155,9 @@ button:focus-visible {
 }
 
 .today{
-  background-color: #c8ffba;
-  border-color: black;
-  border-width: 3px;
-  z-index: 1000;
+  color: #129d12;
+  border-top-width: 10px;
+  border-top-color: #129d12;
 }
 
 .form{
@@ -145,9 +172,10 @@ button:focus-visible {
   font-size: 100%;
 }
 
+
 .schedule_set{
   overflow: auto;
-  height: 75%;
+  height: 73%;
 }
 
 
@@ -157,9 +185,4 @@ button:focus-visible {
 
 .schedule_detail_header{
   width: 90%;
-}
-
-.schedule_detail_header_button{
-  display: flex;
-  float: left;
 }
