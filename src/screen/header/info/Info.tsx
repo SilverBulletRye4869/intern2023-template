@@ -19,7 +19,7 @@ type Props = {
 
 const Info = ({ year, month, setTime }: Props) => {
   return (
-    <p className="info" key="info">
+    <Box className="info" key="info">
       <Button
         size="xs"
         color="black"
@@ -40,7 +40,7 @@ const Info = ({ year, month, setTime }: Props) => {
             <PopoverHeader>年月を変更</PopoverHeader>
             <PopoverCloseButton />
             <PopoverBody>
-              <Box className="year_choice">
+              <Box className="year_choice" key="year_choice">
                 <Button
                   className="year_button"
                   backgroundColor="#ade2d1"
@@ -66,7 +66,7 @@ const Info = ({ year, month, setTime }: Props) => {
                 </Button>
               </Box>
               <hr />
-              <Box className="month_set">
+              <Box className="month_set" key="month_set">
                 {new Array(12).fill(0).map((_, m) => {
                   return (
                     <>
@@ -93,7 +93,7 @@ const Info = ({ year, month, setTime }: Props) => {
       >
         &gt;
       </Button>
-    </p>
+    </Box>
   );
 };
 
