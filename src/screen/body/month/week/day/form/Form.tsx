@@ -21,6 +21,8 @@ type Props = {
   onCancel: () => void;
   title: string;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
+  date: string;
+  setDate: React.Dispatch<React.SetStateAction<string>>;
   start: string;
   setStart: React.Dispatch<React.SetStateAction<string>>;
   end: string;
@@ -34,6 +36,8 @@ const Form = ({
   onCancel,
   title,
   setTitle,
+  date,
+  setDate,
   start,
   setStart,
   end,
@@ -42,9 +46,11 @@ const Form = ({
   setMemo,
 }: Props) => {
   const [titleCollectState, setTitleCollectState] = useState(true);
+  const [dateCollectState, setDateCollectState] = useState(true);
   const [timeCollectState, setTimeCollectState] = useState(true);
-  let timeCollect: boolean, titleCollect: boolean;
-  timeCollect = titleCollect = true;
+
+  let timeCollect: boolean, dateCollect: boolean, titleCollect: boolean;
+  timeCollect = dateCollect = titleCollect = true;
 
   const onChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -57,16 +63,17 @@ const Form = ({
     const startTime = start.replace(":", "");
     const endTime = end.replace(":", "");
 
-    console.log(`${parseInt(startTime)}-${parseInt(endTime)}`);
     timeCollect =
       (startTime == "" ? -1 : parseInt(startTime)) <=
       (endTime == "" ? 3000 : parseInt(endTime));
 
     titleCollect = title != "";
+
+    dateCollect = !isNaN(new Date(date.replace("/", "")).getDate());
     setTimeCollectState(timeCollect);
     setTitleCollectState(titleCollect);
-    console.log(`${timeCollect.toString()} - ${titleCollect.toString()}`);
-    if (timeCollect && titleCollect) onSave();
+    setDateCollectState(dateCollect);
+    if (timeCollect && titleCollect && dateCollect) onSave();
   };
 
   return (
@@ -77,9 +84,27 @@ const Form = ({
           <TitleInput
             value={title}
             setValue={setTitle}
-            placeholder="予定名"
+            placeholder="タイトルを入力"
             formatCollect={titleCollectState}
           />
+        </Box>
+        <Box className="date_form">
+          <Box className="form_font">実施日</Box>
+          <FormControl isInvalid={!dateCollectState}>
+            <Input
+              placeholder="----/--/--"
+              size="md"
+              type="date"
+              width="80%"
+              value={date}
+              onChange={(e) => onChange(e, setDate)}
+            />
+            {dateCollectState ? (
+              ""
+            ) : (
+              <FormErrorMessage>実施日が不適です</FormErrorMessage>
+            )}
+          </FormControl>
         </Box>
         <Box className="time_form">
           <Box className="form_font">実施時刻</Box>
