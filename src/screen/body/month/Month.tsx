@@ -1,13 +1,15 @@
 import Week from "./week/Week";
-
+import type { ScheduleTable } from "~/screen/Screen";
 type Props = {
   year: number;
   month: number;
+  scheduleTables: ScheduleTable[];
+  setScheduleTables: React.Dispatch<React.SetStateAction<ScheduleTable[]>>;
 };
 
 const dayMax = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-const Month = ({ year, month }: Props) => {
+const Month = ({ year, month, scheduleTables, setScheduleTables }: Props) => {
   //指定した年月の最終日を取得する（閏年考慮済み）
   const getLastDay = (year: number, month: number) => {
     return month !== 1 || year % 4 != 0 || (year % 100 == 0 && year % 400 != 0)
@@ -32,6 +34,8 @@ const Month = ({ year, month }: Props) => {
             start={startDay}
             end={Math.min(getLastDay(year, month), (startDay += 7))}
             key={`week_${i}`}
+            scheduleTables={scheduleTables}
+            setScheduleTables={setScheduleTables}
           />
         );
       })}
