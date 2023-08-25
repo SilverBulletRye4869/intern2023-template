@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PopoverForm from "./form/PopOverForm";
 import {
   Box,
@@ -12,49 +12,54 @@ import {
   PopoverBody,
 } from "@chakra-ui/react";
 
-import { TimeIcon, ChatIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
-
-export type { Schedule };
+import {
+  TimeIcon,
+  ChatIcon,
+  DeleteIcon,
+  EditIcon,
+  CalendarIcon,
+} from "@chakra-ui/icons";
+import type { Schedule, ScheduleTable } from "~/screen/Screen";
 
 type Props = {
   year: number;
   month: number;
   day: number;
   row: number;
+  scheduleTables: ScheduleTable[];
+  setScheduleTables: React.Dispatch<React.SetStateAction<ScheduleTable[]>>;
 };
 
-interface Schedule {
-  id: number;
-  title: string;
-  start: string;
-  end: string;
-  memo: string;
-  allowEdit: boolean;
-}
-
-interface ScheduleTable {
-  year: number;
-  month: number;
-  day: number;
-  nextId: number;
-  sche: Schedule[];
-}
-
 //const scheduleTables: ScheduleTable[] = [];
-const Day = ({ year, month, day, row }: Props) => {
-  const [scheduleTables, setScheduleTables] = useState<ScheduleTable[]>([]);
+const Day = ({
+  year,
+  month,
+  day,
+  row,
+  scheduleTables,
+  setScheduleTables,
+}: Props) => {
   const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [memo, setMemo] = useState("");
   const [bookNum, setBookNum] = useState(0);
+  const [isFormOpen, setFormOpen] = useState(false);
+
   const onHover = (day: number, isOver: boolean) => {
-    if (day <= 0) return;
+    if (day <= 0 || isFormOpen) return;
     const bookBox = document.getElementById(`${day}_schedule`);
     if (bookBox == null) return;
     bookBox.style.display = isOver ? "flex" : "none";
     return;
   };
+
+  useEffect(() => {
+    if (isFormOpen) return;
+    onHover(day, false);
+    return;
+  }, [isFormOpen]);
 
   const getTableIndex = (year: number, month: number, day: number) => {
     return scheduleTables.findIndex(
@@ -66,15 +71,20 @@ const Day = ({ year, month, day, row }: Props) => {
   };
 
   const register = () => {
-    console.log(`${title}-${start}-${end}-${memo}`);
-
-    let tableIndex: number = getTableIndex(year, month, day);
+    console.log(date);
+    const targetDate: number[] = date.split("-").map((s) => parseInt(s));
+    let tableIndex: number = getTableIndex(
+      targetDate[0],
+      targetDate[1] - 1,
+      targetDate[2]
+    );
     if (tableIndex == -1) {
       tableIndex = scheduleTables.length;
       scheduleTables[tableIndex] = {
-        year: year,
-        month: month,
-        day: day,
+        year: targetDate[0],
+        month: targetDate[1] - 1,
+        day: targetDate[2],
+        isHoliday: false,
         nextId: 0,
         sche: [],
       };
@@ -94,17 +104,25 @@ const Day = ({ year, month, day, row }: Props) => {
       scheduleTable,
       ...scheduleTables.slice(tableIndex + 1, scheduleTables.length),
     ]);
-    initValue();
     //setBookNum(bookNum + 1);
   };
 
   const update = (sche: Schedule) => {
-    sche.title = title;
-    sche.start = start;
-    sche.end = end;
-    sche.memo = memo;
+    const targetDate: number[] = date.split("-").map((s) => parseInt(s));
+    if (
+      targetDate[0] == year &&
+      targetDate[1] - 1 == month &&
+      targetDate[2] == day
+    ) {
+      sche.title = title;
+      sche.start = start;
+      sche.end = end;
+      sche.memo = memo;
+    } else {
+      register();
+      deleter(sche.id);
+    }
     initValue();
-
     return;
   };
 
@@ -122,8 +140,8 @@ const Day = ({ year, month, day, row }: Props) => {
   };
 
   const initValue = (sche: Schedule | null = null) => {
-    console.log(`${title} - ${sche ? "t" : "f"}`);
     setTitle(sche ? sche.title : "");
+    setDate(`${year}-${`0${month + 1}`.slice(-2)}-${`0${day}`.slice(-2)}`);
     setStart(sche ? sche.start : "");
     setEnd(sche ? sche.end : "");
     setMemo(sche ? sche.memo : "");
@@ -133,12 +151,18 @@ const Day = ({ year, month, day, row }: Props) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     boxTitle: any,
     schedule: Schedule | null,
-    registerFunction: (() => void) | ((sche: Schedule) => void)
+    registerFunction: (() => void) | ((sche: Schedule) => void),
+    isEnable = true,
+    height = "auto",
+    width = "auto",
+    triggerFontSize = "auto"
   ) => {
     return (
       <PopoverForm
         title={title}
         setTitle={setTitle}
+        date={date}
+        setDate={setDate}
         start={start}
         setStart={setStart}
         end={end}
@@ -149,20 +173,30 @@ const Day = ({ year, month, day, row }: Props) => {
         boxTitle={boxTitle}
         schedule={schedule}
         register={registerFunction}
-        init={initValue}
+        initValue={initValue}
+        height={height}
+        width={width}
+        triggerFontSize={triggerFontSize}
+        isEnable={isEnable}
+        day={day}
+        setFormOpen={setFormOpen}
       />
     );
   };
 
-  const date: Date = new Date();
+  const today: Date = new Date();
   const isToday: boolean =
-    date.getFullYear() == year &&
-    date.getMonth() == month &&
-    date.getDate() == day;
+    today.getFullYear() == year &&
+    today.getMonth() == month &&
+    today.getDate() == day;
+
+  const index = getTableIndex(year, month, day);
 
   return (
     <Box
-      className={`day row${row} ${isToday ? "today" : ""}`}
+      className={`day row${
+        index >= 0 && scheduleTables[index].isHoliday ? 0 : row
+      } ${isToday ? "today" : ""}`}
       id={`${day}`}
       onMouseOver={() => {
         onHover(day, true);
@@ -173,7 +207,6 @@ const Day = ({ year, month, day, row }: Props) => {
     >
       <Box className="day_font">{day <= 0 ? "" : day}</Box>
       {(() => {
-        const index = getTableIndex(year, month, day);
         return (
           <Box className="schedule_set">
             {index >= 0 ? (
@@ -187,9 +220,16 @@ const Day = ({ year, month, day, row }: Props) => {
                         <PopoverTrigger>
                           <Button
                             className="schedule"
-                            backgroundColor="#19fe85"
+                            backgroundColor={
+                              schedule.allowEdit ? "#4dbd45" : "#ff6666"
+                            }
                             onClick={() => initValue(schedule)}
-                            isDisabled={!schedule.allowEdit}
+                            h="auto"
+                            w="95%"
+                            fontSize="0.4em"
+                            display="flex"
+                            marginTop="0.2em"
+                            color="black"
                           >
                             {schedule.title}
                           </Button>
@@ -201,23 +241,43 @@ const Day = ({ year, month, day, row }: Props) => {
                             <PopoverHeader className="schedule_detail_header">
                               {schedule.title}
                               <Box className="schedule_detail_headder_button">
-                                {popoverform(<EditIcon />, schedule, update)}
-
+                                {popoverform(
+                                  <EditIcon />,
+                                  schedule,
+                                  update,
+                                  schedule.allowEdit
+                                )}
+                                {"　"}
                                 <Button
                                   onClick={() => deleter(schedule.id)}
                                   isDisabled={!schedule.allowEdit}
+                                  h="auto"
+                                  w="auto"
+                                  backgroundColor="#ff6666"
                                 >
                                   <DeleteIcon />
                                 </Button>
                               </Box>
                             </PopoverHeader>
                             <PopoverBody>
+                              <Box className="schedule_detail_date">
+                                <CalendarIcon />
+                                {"　"}
+                                {`${year}/${month + 1}/${day}`}
+                              </Box>
+                              <hr />
                               <Box className="schedule_detail_time">
                                 <TimeIcon />
                                 {"　"}
-                                {`${
-                                  schedule.start ? schedule.start : "-- : --"
-                                } ~ ${schedule.end ? schedule.end : "-- : --"}`}
+                                {!schedule.start && !schedule.end
+                                  ? "終日"
+                                  : `${
+                                      schedule.start
+                                        ? schedule.start
+                                        : "-- : --"
+                                    } ~ ${
+                                      schedule.end ? schedule.end : "-- : --"
+                                    }`}
                               </Box>
                               <hr />
                               <Box className="schedule_detail_memo">
@@ -236,8 +296,16 @@ const Day = ({ year, month, day, row }: Props) => {
             ) : (
               ""
             )}
-            <Box id={`${day}_schedule`} display="none">
-              {popoverform("新規追加", null, register)}
+            <Box id={`${day}_schedule`} display="none" marginTop="0.2em">
+              {popoverform(
+                "新規追加",
+                null,
+                register,
+                true,
+                "5%",
+                "95%",
+                "0.4em"
+              )}
             </Box>
           </Box>
         );
