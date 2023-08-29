@@ -53,11 +53,11 @@ export const PopOverContent: React.FC<Props> = ({
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     setFunc: React.Dispatch<React.SetStateAction<string>>
-  ) => {
+  ): void => {
     setFunc(event.target.value);
   };
 
-  const formatCheck = () => {
+  const formatCheck = (): void => {
     const startTime = start.replace(":", "");
     const endTime = end.replace(":", "");
 
