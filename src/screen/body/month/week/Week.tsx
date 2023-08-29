@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Day } from "./day/Day";
 import type { ScheduleTable } from "~/@types/schedule.js";
-import { SupabaseClient } from "@supabase/supabase-js";
 import type { Supabase } from "~/supabase/Supabase";
 
 type Props = {
@@ -20,6 +18,7 @@ type Props = {
     thisMemo: string
   ) => void;
   getTableIndex: (year: number, month: number, day: number) => number;
+  isOnline: boolean;
 };
 
 export const Week: React.FC<Props> = ({
@@ -31,10 +30,10 @@ export const Week: React.FC<Props> = ({
   supabase,
   save,
   getTableIndex,
+  isOnline,
 }) => {
   const loop = new Array(7).fill(0);
   let day = start;
-
   return (
     <div className="week">
       {loop.map((_, i) => {
@@ -50,6 +49,7 @@ export const Week: React.FC<Props> = ({
             supabase={supabase}
             save={save}
             getTableIndex={getTableIndex}
+            isOnline={isOnline}
           />
         );
       })}

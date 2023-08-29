@@ -1,8 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { PopoverForm } from "./form/PopOverForm";
 import {
   Box,
@@ -25,6 +21,8 @@ import {
 } from "@chakra-ui/icons";
 import type { Schedule, ScheduleTable } from "~/@types/schedule.js";
 import type { Supabase } from "~/supabase/Supabase";
+import type { PostgrestSingleResponse } from "@supabase/supabase-js";
+import type { SupabaseResponse } from "~/@types/supabase";
 
 type Props = {
   year: number;
@@ -42,6 +40,7 @@ type Props = {
     thisMemo: string
   ) => void;
   getTableIndex: (year: number, month: number, day: number) => number;
+  isOnline: boolean;
 };
 
 //const scheduleTables: ScheduleTable[] = [];
@@ -54,6 +53,7 @@ export const Day: React.FC<Props> = ({
   supabase,
   save,
   getTableIndex,
+  isOnline,
 }) => {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -63,64 +63,62 @@ export const Day: React.FC<Props> = ({
   const [bookNum, setBookNum] = useState(0);
   const [isFormOpen, setFormOpen] = useState(false);
 
-  const onHover = (day: number, isOver: boolean) => {
-    if (day <= 0 || isFormOpen) return;
-    const bookBox = document.getElementById(`${day}_schedule`);
-    if (bookBox == null) return;
-    bookBox.style.display = isOver ? "flex" : "none";
-    return;
-  };
+  const onHover = useCallback(
+    (day: number, isOver: boolean): void => {
+      if (day <= 0 || isFormOpen) return;
+      const bookBox = document.getElementById(`${day}_schedule`);
+      if (bookBox == null) return;
+      bookBox.style.display = isOver ? "flex" : "none";
+      return;
+    },
+    [isFormOpen]
+  );
 
-  useEffect(() => {
+  useEffect((): void => {
     if (isFormOpen) return;
     onHover(day, false);
     return;
-  }, [isFormOpen]);
+  }, [day, isFormOpen, onHover]);
 
   const register = async (): Promise<void> => {
     //db保存の処理
     const targetDate: number[] = date.split("-").map((s) => parseInt(s));
-    const res = await supabase.regisisterSchedule(
-      title,
-      targetDate,
-      start,
-      end,
-      memo
-    );
-    const scheduleId = res && res.data ? res.data[0].sche_Id : -1;
+    const res: PostgrestSingleResponse<SupabaseResponse[]> =
+      await supabase.regisisterSchedule(title, targetDate, start, end, memo);
+    const scheduleId = res && res.data ? res.data[0].scheduleId : -1;
     if (scheduleId == 0) return;
     save(scheduleId, title, targetDate, start, end, memo);
   };
 
-  const update = async (schedule: Schedule) => {
+  const update = async (schedule?: Schedule): Promise<void> => {
+    if (!schedule) {
+      void register();
+      return;
+    }
+
     const targetDate: number[] = date.split("-").map((s) => parseInt(s));
     if (
-      targetDate[0] == year &&
-      targetDate[1] - 1 == month &&
-      targetDate[2] == day
+      !(
+        targetDate[0] == year &&
+        targetDate[1] - 1 == month &&
+        targetDate[2] == day
+      )
     ) {
-      schedule.title = title;
-      schedule.start = start;
-      schedule.end = end;
-      schedule.memo = memo;
-      const res = await supabase.updateSchedule(
-        schedule.uid,
-        title,
-        start,
-        end,
-        memo
-      );
-
-      console.log(res);
-    } else {
       void register();
-      deleter(schedule.uid, schedule.id);
+      void deleter(schedule.uid, schedule.id);
     }
+
+    schedule.title = title;
+    schedule.start = start;
+    schedule.end = end;
+    schedule.memo = memo;
+    await supabase.updateSchedule(schedule.uid, title, start, end, memo);
+
     initValue();
     return;
   };
 
-  const deleter = async (uid: number, id: number) => {
+  const deleter = async (uid: number, id: number): Promise<void> => {
     await supabase.deleteSchedule(uid);
     const tableIndex = getTableIndex(year, month, day);
     if (tableIndex == -1) return;
@@ -145,9 +143,6 @@ export const Day: React.FC<Props> = ({
   const popoverform = (
     boxTitle: React.ReactNode,
     schedule: Schedule | null,
-    registerFunction:
-      | ((schedule: Schedule) => Promise<void>)
-      | (() => Promise<void>),
     isEnable = true,
     height = "auto",
     width = "auto",
@@ -167,7 +162,7 @@ export const Day: React.FC<Props> = ({
         setMemo={setMemo}
         boxTitle={boxTitle}
         schedule={schedule}
-        registerFunc={registerFunction}
+        updateFunc={update}
         initValue={initValue}
         height={height}
         width={width}
@@ -239,7 +234,6 @@ export const Day: React.FC<Props> = ({
                                 {popoverform(
                                   <EditIcon />,
                                   schedule,
-                                  update,
                                   schedule.allowEdit
                                 )}
                                 {"　"}
@@ -294,14 +288,19 @@ export const Day: React.FC<Props> = ({
               ""
             )}
             <Box id={`${day}_schedule`} display="none" marginTop="0.2em">
-              {popoverform(
-                "新規追加",
-                null,
-                register,
-                true,
-                "5%",
-                "95%",
-                "0.4em"
+              {isOnline ? (
+                popoverform("新規追加", null, true, "5%", "95%", "0.4em")
+              ) : (
+                <Button
+                  disabled
+                  h="5%"
+                  w="95%"
+                  fontSize="0.4em"
+                  backgroundColor="#888"
+                  color="black"
+                >
+                  利用不可
+                </Button>
               )}
             </Box>
           </Box>
