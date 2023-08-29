@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Button,
@@ -10,11 +8,11 @@ import {
   FormControl,
   FormErrorMessage,
 } from "@chakra-ui/react";
-import TitleInput from "./TitleInput";
 import { useState } from "react";
 import type React from "react";
 
 const MEMO_MAX_LENGTH = 255;
+const TITLE_MAX_LENGTH = 10;
 
 type Props = {
   onSave: () => void;
@@ -31,7 +29,7 @@ type Props = {
   setMemo: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Form = ({
+export const PopOverContent: React.FC<Props> = ({
   onSave,
   onCancel,
   title,
@@ -44,7 +42,7 @@ const Form = ({
   setEnd,
   memo,
   setMemo,
-}: Props) => {
+}) => {
   const [titleCollectState, setTitleCollectState] = useState(true);
   const [dateCollectState, setDateCollectState] = useState(true);
   const [timeCollectState, setTimeCollectState] = useState(true);
@@ -52,7 +50,7 @@ const Form = ({
   let timeCollect: boolean, dateCollect: boolean, titleCollect: boolean;
   timeCollect = dateCollect = titleCollect = true;
 
-  const onChange = (
+  const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     setFunc: React.Dispatch<React.SetStateAction<string>>
   ) => {
@@ -81,12 +79,19 @@ const Form = ({
       <Stack spacing={4}>
         <Box className="title_form">
           <Box className="form_font">タイトル</Box>
-          <TitleInput
-            value={title}
-            setValue={setTitle}
-            placeholder="タイトルを入力"
-            formatCollect={titleCollectState}
-          />
+          <FormControl isInvalid={!titleCollectState}>
+            <Input
+              placeholder="タイトルを入力"
+              value={title}
+              onChange={(e) => handleChange(e, setTitle)}
+              maxLength={TITLE_MAX_LENGTH}
+            />
+            {titleCollect ? (
+              ""
+            ) : (
+              <FormErrorMessage>この項目は必須です</FormErrorMessage>
+            )}
+          </FormControl>
         </Box>
         <Box className="date_form">
           <Box className="form_font">実施日</Box>
@@ -97,7 +102,7 @@ const Form = ({
               type="date"
               width="80%"
               value={date}
-              onChange={(e) => onChange(e, setDate)}
+              onChange={(e) => handleChange(e, setDate)}
             />
             {dateCollectState ? (
               ""
@@ -115,7 +120,7 @@ const Form = ({
               type="time"
               width="40%"
               value={start}
-              onChange={(e) => onChange(e, setStart)}
+              onChange={(e) => handleChange(e, setStart)}
             />{" "}
             ~{" "}
             <Input
@@ -124,7 +129,7 @@ const Form = ({
               type="time"
               width="40%"
               value={end}
-              onChange={(e) => onChange(e, setEnd)}
+              onChange={(e) => handleChange(e, setEnd)}
             />
             {timeCollectState ? (
               ""
@@ -136,7 +141,7 @@ const Form = ({
         <Textarea
           placeholder="詳細メモ"
           value={memo}
-          onChange={(e) => onChange(e, setMemo)}
+          onChange={(e) => handleChange(e, setMemo)}
           maxLength={MEMO_MAX_LENGTH}
         />
         <ButtonGroup display="flex" justifyContent="flex-end">
@@ -149,5 +154,3 @@ const Form = ({
     </Box>
   );
 };
-
-export default Form;
