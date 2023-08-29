@@ -1,35 +1,25 @@
+/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { SupabaseClient, createClient } from "@supabase/supabase-js";
 
-import Header from "./header/Header";
-import Body from "./body/Body";
-export type { Schedule, ScheduleTable };
+import { Header } from "./header/Header";
+import { Body } from "./body/Body";
+import { Schedule, ScheduleTable } from "~/@types/schedule";
+import { Supabase } from "~/supabase/Supabase";
 
-interface Schedule {
-  id: number;
-  title: string;
-  start: string;
-  end: string;
-  memo: string;
-  allowEdit: boolean;
-}
+const HOLIDAY_API = "https://holidays-jp.github.io/api/v1/date.json";
 
-interface ScheduleTable {
-  year: number;
-  month: number;
-  day: number;
-  isHoliday: boolean;
-  nextId: number;
-  sche: Schedule[];
-}
+let isHolidayLoaded = false;
 
-const Screen = () => {
+export const Screen: React.FC = () => {
   const [scheduleTables, setScheduleTables] = useState<ScheduleTable[]>([]);
-
   const date = new Date();
   const [year, setYear] = useState(date.getFullYear());
   const [month, setMonth] = useState(date.getMonth());
+
+  const supabase = new Supabase();
 
   const setTime = (newYear: number, newMonth: number) => {
     while (newMonth < 0) {
@@ -44,49 +34,91 @@ const Screen = () => {
     setMonth(newMonth);
   };
 
-  if (scheduleTables.length == 0) {
-    void fetch("https://holidays-jp.github.io/api/v1/date.json") //1
-      .then((response: Response) => response.text()) //2
-      .then((data: string) => {
-        //3
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const holidayJson: JSON = JSON.parse(data);
-        let temp: ScheduleTable[] = [];
-        for (const [key, value] of Object.entries(holidayJson)) {
-          const date: number[] = key.split("-").map((s) => parseInt(s));
-          const schedule: Schedule = {
-            title: value,
-            id: 0,
-            start: "",
-            end: "",
-            memo: "祝日",
-            allowEdit: false,
-          };
-          const scheduleTable: ScheduleTable = {
-            year: date[0],
-            month: date[1] - 1,
-            day: date[2],
-            isHoliday: true,
-            nextId: 1,
-            sche: [schedule],
-          };
-          temp = [...temp, scheduleTable];
-        }
-        setScheduleTables(temp);
-      });
-  }
+  const holidayLoad = async () => {
+    const res: Response = await fetch(HOLIDAY_API);
+    const data: string = await res.text();
+    const holidayJson: JSON = JSON.parse(data);
+    for (const [key, value] of Object.entries(holidayJson)) {
+      const date: number[] = key.split("-").map((s) => parseInt(s));
+
+      save(-1, value, date, "", "", "祝日", true);
+    }
+  };
+
+  useEffect(() => {
+    if (isHolidayLoaded) return;
+    isHolidayLoaded = true;
+    holidayLoad();
+  }, []);
+
+  const getTableIndex = (year: number, month: number, day: number) => {
+    return scheduleTables.findIndex(
+      (scheTable: ScheduleTable) =>
+        scheTable.year == year &&
+        scheTable.month == month &&
+        scheTable.day == day
+    );
+  };
+
+  const save = (
+    uid: number,
+    thisTitle: string,
+    thisDate: number[],
+    thisStart: string,
+    thisEnd: string,
+    thisMemo: string,
+    isHoliday: boolean = false
+  ) => {
+    let tableIndex: number = getTableIndex(
+      thisDate[0],
+      thisDate[1] - 1,
+      thisDate[2]
+    );
+    if (tableIndex == -1) {
+      tableIndex = scheduleTables.length;
+      scheduleTables[tableIndex] = {
+        year: thisDate[0],
+        month: thisDate[1] - 1,
+        day: thisDate[2],
+        isHoliday: isHoliday,
+        nextId: 0,
+        schedules: [],
+      };
+    }
+    const schedule: Schedule = {
+      uid: uid,
+      id: scheduleTables[tableIndex].nextId++,
+      title: thisTitle,
+      start: thisStart,
+      end: thisEnd,
+      memo: thisMemo,
+      allowEdit: !isHoliday,
+    };
+    const scheduleTable = scheduleTables[tableIndex];
+    scheduleTable.schedules = [
+      ...scheduleTables[tableIndex].schedules,
+      schedule,
+    ];
+
+    setScheduleTables([
+      ...scheduleTables.slice(0, tableIndex),
+      scheduleTable,
+      ...scheduleTables.slice(tableIndex + 1, scheduleTables.length),
+    ]);
+    //setBookNum(bookNum + 1);
+  };
 
   return (
-    <div className="screen" key="screen">
+    <div className="screen">
       <Header year={year} month={month} setTime={setTime} />
       <Body
         year={year}
         month={month}
         scheduleTables={scheduleTables}
-        setScheduleTables={setScheduleTables}
+        supabase={supabase}
+        save={save}
+        getTableIndex={getTableIndex}
       />
     </div>
   );
 };
-
-export default Screen;

@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { useEffect, useState } from "react";
-import PopoverForm from "./form/PopOverForm";
+import { PopoverForm } from "./form/PopOverForm";
 import {
   Box,
   Popover,
@@ -19,7 +23,8 @@ import {
   EditIcon,
   CalendarIcon,
 } from "@chakra-ui/icons";
-import type { Schedule, ScheduleTable } from "~/screen/Screen";
+import type { Schedule, ScheduleTable } from "~/@types/schedule.js";
+import type { Supabase } from "~/supabase/Supabase";
 
 type Props = {
   year: number;
@@ -27,18 +32,29 @@ type Props = {
   day: number;
   row: number;
   scheduleTables: ScheduleTable[];
-  setScheduleTables: React.Dispatch<React.SetStateAction<ScheduleTable[]>>;
+  supabase: Supabase;
+  save: (
+    uid: number,
+    thisTitle: string,
+    thisDate: number[],
+    thisStart: string,
+    thisEnd: string,
+    thisMemo: string
+  ) => void;
+  getTableIndex: (year: number, month: number, day: number) => number;
 };
 
 //const scheduleTables: ScheduleTable[] = [];
-const Day = ({
+export const Day: React.FC<Props> = ({
   year,
   month,
   day,
   row,
   scheduleTables,
-  setScheduleTables,
-}: Props) => {
+  supabase,
+  save,
+  getTableIndex,
+}) => {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [start, setStart] = useState("");
@@ -61,102 +77,82 @@ const Day = ({
     return;
   }, [isFormOpen]);
 
-  const getTableIndex = (year: number, month: number, day: number) => {
-    return scheduleTables.findIndex(
-      (scheTable: ScheduleTable) =>
-        scheTable.year == year &&
-        scheTable.month == month &&
-        scheTable.day == day
-    );
-  };
-
-  const register = () => {
-    console.log(date);
+  const register = async (): Promise<void> => {
+    //db保存の処理
     const targetDate: number[] = date.split("-").map((s) => parseInt(s));
-    let tableIndex: number = getTableIndex(
-      targetDate[0],
-      targetDate[1] - 1,
-      targetDate[2]
+    const res = await supabase.regisisterSchedule(
+      title,
+      targetDate,
+      start,
+      end,
+      memo
     );
-    if (tableIndex == -1) {
-      tableIndex = scheduleTables.length;
-      scheduleTables[tableIndex] = {
-        year: targetDate[0],
-        month: targetDate[1] - 1,
-        day: targetDate[2],
-        isHoliday: false,
-        nextId: 0,
-        sche: [],
-      };
-    }
-    const sche: Schedule = {
-      id: scheduleTables[tableIndex].nextId++,
-      title: title,
-      start: start,
-      end: end,
-      memo: memo,
-      allowEdit: true,
-    };
-    const scheduleTable = scheduleTables[tableIndex];
-    scheduleTable.sche = [...scheduleTables[tableIndex].sche, sche];
-    setScheduleTables([
-      ...scheduleTables.slice(0, tableIndex),
-      scheduleTable,
-      ...scheduleTables.slice(tableIndex + 1, scheduleTables.length),
-    ]);
-    //setBookNum(bookNum + 1);
+    const scheduleId = res && res.data ? res.data[0].sche_Id : -1;
+    if (scheduleId == 0) return;
+    save(scheduleId, title, targetDate, start, end, memo);
   };
 
-  const update = (sche: Schedule) => {
+  const update = async (schedule: Schedule) => {
     const targetDate: number[] = date.split("-").map((s) => parseInt(s));
     if (
       targetDate[0] == year &&
       targetDate[1] - 1 == month &&
       targetDate[2] == day
     ) {
-      sche.title = title;
-      sche.start = start;
-      sche.end = end;
-      sche.memo = memo;
+      schedule.title = title;
+      schedule.start = start;
+      schedule.end = end;
+      schedule.memo = memo;
+      const res = await supabase.updateSchedule(
+        schedule.uid,
+        title,
+        start,
+        end,
+        memo
+      );
+
+      console.log(res);
     } else {
-      register();
-      deleter(sche.id);
+      void register();
+      deleter(schedule.uid, schedule.id);
     }
     initValue();
     return;
   };
 
-  const deleter = (id: number) => {
+  const deleter = async (uid: number, id: number) => {
+    await supabase.deleteSchedule(uid);
     const tableIndex = getTableIndex(year, month, day);
     if (tableIndex == -1) return;
-    const scheIndex = scheduleTables[tableIndex].sche.findIndex(
-      (sche: Schedule) => sche.id == id
+    const scheIndex = scheduleTables[tableIndex].schedules.findIndex(
+      (schedule: Schedule) => schedule.id == id
     );
-    delete scheduleTables[tableIndex].sche[scheIndex];
-    scheduleTables[tableIndex].sche =
-      scheduleTables[tableIndex].sche.filter(Boolean); //詰める
+    delete scheduleTables[tableIndex].schedules[scheIndex];
+    scheduleTables[tableIndex].schedules =
+      scheduleTables[tableIndex].schedules.filter(Boolean); //詰める
     setBookNum(bookNum - 1);
     return;
   };
 
-  const initValue = (sche: Schedule | null = null) => {
-    setTitle(sche ? sche.title : "");
+  const initValue = (schedule: Schedule | null = null): void => {
+    setTitle(schedule ? schedule.title : "");
     setDate(`${year}-${`0${month + 1}`.slice(-2)}-${`0${day}`.slice(-2)}`);
-    setStart(sche ? sche.start : "");
-    setEnd(sche ? sche.end : "");
-    setMemo(sche ? sche.memo : "");
+    setStart(schedule ? schedule.start : "");
+    setEnd(schedule ? schedule.end : "");
+    setMemo(schedule ? schedule.memo : "");
   };
 
   const popoverform = (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    boxTitle: any,
+    boxTitle: React.ReactNode,
     schedule: Schedule | null,
-    registerFunction: (() => void) | ((sche: Schedule) => void),
+    registerFunction:
+      | ((schedule: Schedule) => Promise<void>)
+      | (() => Promise<void>),
     isEnable = true,
     height = "auto",
     width = "auto",
     triggerFontSize = "auto"
-  ) => {
+  ): JSX.Element => {
     return (
       <PopoverForm
         title={title}
@@ -169,10 +165,9 @@ const Day = ({
         setEnd={setEnd}
         memo={memo}
         setMemo={setMemo}
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         boxTitle={boxTitle}
         schedule={schedule}
-        register={registerFunction}
+        registerFunc={registerFunction}
         initValue={initValue}
         height={height}
         width={width}
@@ -211,10 +206,10 @@ const Day = ({
           <Box className="schedule_set">
             {index >= 0 ? (
               <Box className="schedule_list">
-                {new Array(scheduleTables[index].sche.length)
+                {new Array(scheduleTables[index].schedules.length)
                   .fill(0)
                   .map((_, i) => {
-                    const schedule = scheduleTables[index].sche[i];
+                    const schedule = scheduleTables[index].schedules[i];
                     return (
                       <Popover key={`schedule_${i}`}>
                         <PopoverTrigger>
@@ -249,7 +244,9 @@ const Day = ({
                                 )}
                                 {"　"}
                                 <Button
-                                  onClick={() => deleter(schedule.id)}
+                                  onClick={() =>
+                                    deleter(schedule.uid, schedule.id)
+                                  }
                                   isDisabled={!schedule.allowEdit}
                                   h="auto"
                                   w="auto"
@@ -313,5 +310,3 @@ const Day = ({
     </Box>
   );
 };
-
-export default Day;

@@ -1,26 +1,45 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import Label from "./label/Labels";
-import Month from "./month/Month";
-import type { ScheduleTable } from "../Screen";
+import { Month } from "./month/Month";
+import type { ScheduleTable } from "~/@types/schedule.js";
+import { Schedule } from "~/@types/schedule.js";
+import type { Supabase } from "~/supabase/Supabase";
 
 type Props = {
   year: number;
   month: number;
   scheduleTables: ScheduleTable[];
-  setScheduleTables: React.Dispatch<React.SetStateAction<ScheduleTable[]>>;
+  supabase: Supabase;
+  save: (
+    uid: number,
+    thisTitle: string,
+    thisDate: number[],
+    thisStart: string,
+    thisEnd: string,
+    thisMemo: string
+  ) => void;
+  getTableIndex: (year: number, month: number, day: number) => number;
 };
 
-const Body = ({ year, month, scheduleTables, setScheduleTables }: Props) => {
+export const Body: React.FC<Props> = ({
+  year,
+  month,
+  scheduleTables,
+  supabase,
+  save,
+  getTableIndex,
+}) => {
   return (
-    <div className="body" key="body">
+    <div className="body">
       <Label />
       <Month
         year={year}
         month={month}
         scheduleTables={scheduleTables}
-        setScheduleTables={setScheduleTables}
+        supabase={supabase}
+        save={save}
+        getTableIndex={getTableIndex}
       />
     </div>
   );
 };
-
-export default Body;
