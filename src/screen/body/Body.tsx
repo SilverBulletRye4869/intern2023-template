@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import Label from "./label/Labels";
+import { Labels } from "./label/Labels";
 import { Month } from "./month/Month";
 import type { ScheduleTable } from "~/@types/schedule.js";
-import { Schedule } from "~/@types/schedule.js";
 import type { Supabase } from "~/supabase/Supabase";
-
+import { OfflineWarning } from "./OfflineWarning/OfflineWarning";
 type Props = {
   year: number;
   month: number;
@@ -19,6 +17,7 @@ type Props = {
     thisMemo: string
   ) => void;
   getTableIndex: (year: number, month: number, day: number) => number;
+  isOnline: boolean;
 };
 
 export const Body: React.FC<Props> = ({
@@ -28,10 +27,11 @@ export const Body: React.FC<Props> = ({
   supabase,
   save,
   getTableIndex,
+  isOnline,
 }) => {
   return (
     <div className="body">
-      <Label />
+      <Labels />
       <Month
         year={year}
         month={month}
@@ -39,7 +39,9 @@ export const Body: React.FC<Props> = ({
         supabase={supabase}
         save={save}
         getTableIndex={getTableIndex}
+        isOnline={isOnline}
       />
+      {!isOnline ? <OfflineWarning /> : ""}
     </div>
   );
 };
