@@ -16,7 +16,7 @@ import type { Schedule } from "~/@types/schedule";
 type Props = {
   boxTitle: React.ReactNode;
   schedule: Schedule | null;
-  registerFunc: ((schedule: Schedule) => Promise<void>) | (() => Promise<void>);
+  updateFunc: (schedule?: Schedule) => Promise<void>;
   title: string;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
   date: string;
@@ -49,7 +49,7 @@ export const PopoverForm: React.FC<Props> = ({
   setMemo,
   boxTitle,
   schedule,
-  registerFunc,
+  updateFunc,
   initValue,
   height,
   width,
@@ -61,21 +61,21 @@ export const PopoverForm: React.FC<Props> = ({
   const { onOpen, onClose, isOpen } = useDisclosure();
   const insideRef = useRef<HTMLDivElement>(null);
 
-  const onSave = () => {
+  const onSave = (): void => {
     if (title == "") return;
 
-    if (schedule) void registerFunc(schedule);
-    else void registerFunc();
+    if (schedule) void updateFunc(schedule);
+    else void updateFunc();
     setFormOpen(false);
     onClose();
   };
 
-  const onCancel = useCallback(() => {
+  const onCancel = useCallback((): void => {
     setFormOpen(false);
     onClose();
   }, [onClose, setFormOpen]);
 
-  useEffect(() => {
+  useEffect((): (() => void) | undefined => {
     const el = insideRef.current;
     if (!el) return;
 
@@ -96,12 +96,11 @@ export const PopoverForm: React.FC<Props> = ({
     };
   }, [day, insideRef, onCancel]);
 
-  const onStart = () => {
+  const onStart = (): void => {
     setFormOpen(true);
     initValue(schedule);
     onOpen();
   };
-  /* eslint-enable @typescript-eslint/no-unsafe-call */
 
   return (
     <Popover
