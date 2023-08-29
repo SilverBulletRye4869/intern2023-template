@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Box,
   Button,
@@ -14,15 +10,13 @@ import {
 import { useDisclosure } from "@chakra-ui/react";
 import FocusLock from "react-focus-lock";
 import type React from "react";
-import { useEffect, useRef } from "react";
-import Form from "./Form";
-import type { Schedule } from "~/screen/Screen";
-import { ClassNames } from "@emotion/react";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useCallback, useEffect, useRef } from "react";
+import { PopOverContent } from "./PopOverContent";
+import type { Schedule } from "~/@types/schedule";
 type Props = {
-  boxTitle: any;
+  boxTitle: React.ReactNode;
   schedule: Schedule | null;
-  register: any;
+  registerFunc: ((schedule: Schedule) => Promise<void>) | (() => Promise<void>);
   title: string;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
   date: string;
@@ -33,7 +27,7 @@ type Props = {
   setEnd: React.Dispatch<React.SetStateAction<string>>;
   memo: string;
   setMemo: React.Dispatch<React.SetStateAction<string>>;
-  initValue: any;
+  initValue: (schedule: Schedule | null) => void;
   height: string;
   width: string;
   triggerFontSize: string;
@@ -41,9 +35,8 @@ type Props = {
   day: number;
   setFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
-const PopoverForm = ({
+export const PopoverForm: React.FC<Props> = ({
   title,
   setTitle,
   date,
@@ -56,7 +49,7 @@ const PopoverForm = ({
   setMemo,
   boxTitle,
   schedule,
-  register,
+  registerFunc,
   initValue,
   height,
   width,
@@ -64,19 +57,23 @@ const PopoverForm = ({
   isEnable,
   day,
   setFormOpen,
-}: Props) => {
+}) => {
   const { onOpen, onClose, isOpen } = useDisclosure();
   const insideRef = useRef<HTMLDivElement>(null);
 
-  /* eslint-disable @typescript-eslint/no-unsafe-call */
   const onSave = () => {
     if (title == "") return;
 
-    if (schedule) register(schedule);
-    else register();
-
+    if (schedule) void registerFunc(schedule);
+    else void registerFunc();
+    setFormOpen(false);
     onClose();
   };
+
+  const onCancel = useCallback(() => {
+    setFormOpen(false);
+    onClose();
+  }, [onClose, setFormOpen]);
 
   useEffect(() => {
     const el = insideRef.current;
@@ -97,12 +94,7 @@ const PopoverForm = ({
     return () => {
       document.removeEventListener("click", hundleClickOutside);
     };
-  }, [insideRef]);
-
-  const onCancel = () => {
-    setFormOpen(false);
-    onClose();
-  };
+  }, [day, insideRef, onCancel]);
 
   const onStart = () => {
     setFormOpen(true);
@@ -137,7 +129,7 @@ const PopoverForm = ({
           <PopoverArrow />
           <PopoverCloseButton />
           <Box ref={insideRef}>
-            <Form
+            <PopOverContent
               onSave={onSave}
               onCancel={onCancel}
               title={title}
@@ -157,5 +149,3 @@ const PopoverForm = ({
     </Popover>
   );
 };
-
-export default PopoverForm;
