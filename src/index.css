@@ -91,7 +91,7 @@ button:focus-visible {
 }
 @media (min-width: 840px) {
   .label, .day{
-    width: 14%;
+    width: calc(100%/7);
   }
   body{
     display: table;
