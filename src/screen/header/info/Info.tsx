@@ -17,14 +17,28 @@ type Props = {
   setTime: (year: number, month: number) => void;
 };
 
-const Info = ({ year, month, setTime }: Props) => {
+export const Info: React.FC<Props> = ({ year, month, setTime }) => {
+  const handleClickLeftArrow = () => setTime(year, month - 1);
+
+  const handleClickRightArrow = () => setTime(year, month + 1);
+
+  const handleClickOldYear = () => setTime(year - 1, month);
+
+  const handleClickNextYear = () => setTime(year + 1, month);
+
+  const handleClickNow = () =>
+    setTime(new Date().getFullYear(), new Date().getMonth());
+
+  const handleClickSetTime = (targetYear: number, targetMonth: number) =>
+    setTime(targetYear, targetMonth);
+
   return (
     <Box className="info" key="info">
       <Button
         size="xs"
         color="black"
         fontSize="xm"
-        onClick={() => setTime(year, month - 1)}
+        onClick={handleClickLeftArrow}
       >
         &lt;
       </Button>
@@ -44,23 +58,21 @@ const Info = ({ year, month, setTime }: Props) => {
                 <Button
                   className="year_button"
                   backgroundColor="#ade2d1"
-                  onClick={() => setTime(year - 1, month)}
+                  onClick={handleClickOldYear}
                 >
                   {year - 1}年
                 </Button>
                 <Button
                   className="year_button"
                   backgroundColor="#ffdddd"
-                  onClick={() =>
-                    setTime(new Date().getFullYear(), new Date().getMonth())
-                  }
+                  onClick={handleClickNow}
                 >
                   現在
                 </Button>
                 <Button
                   className="year_button"
                   backgroundColor="#ade2d1"
-                  onClick={() => setTime(year + 1, month)}
+                  onClick={handleClickNextYear}
                 >
                   {year + 1}年
                 </Button>
@@ -69,15 +81,14 @@ const Info = ({ year, month, setTime }: Props) => {
               <Box className="month_set" key="month_set">
                 {new Array(12).fill(0).map((_, m) => {
                   return (
-                    <>
-                      <Button
-                        backgroundColor="#ade2d1"
-                        className="month_button"
-                        onClick={() => setTime(year, m)}
-                      >
-                        {m + 1}月
-                      </Button>
-                    </>
+                    <Button
+                      backgroundColor="#ade2d1"
+                      className="month_button"
+                      onClick={() => handleClickSetTime(year, m)}
+                      key={`month_button_${m}`}
+                    >
+                      {m + 1}月
+                    </Button>
                   );
                 })}
               </Box>
@@ -89,12 +100,10 @@ const Info = ({ year, month, setTime }: Props) => {
         size="xs"
         color="black"
         fontSize="xm"
-        onClick={() => setTime(year, month + 1)}
+        onClick={handleClickRightArrow}
       >
         &gt;
       </Button>
     </Box>
   );
 };
-
-export default Info;
