@@ -3,18 +3,16 @@ type Props = {
   setTime: (year: number, month: number) => void;
 };
 
-const Title = ({ setTime }: Props) => {
+export const Title: React.FC<Props> = ({ setTime }) => {
   const date: Date = new Date();
+
+  const handleClickSetTime = () => setTime(date.getFullYear(), date.getMonth());
+
   return (
-    <button
-      className="title"
-      key="title"
-      onClick={() => setTime(date.getFullYear(), date.getMonth())}
-    >
+    <button className="title" onClick={handleClickSetTime}>
       <CalendarIcon />
       {"　"}
       Calender
     </button>
   );
 };
-export default Title;

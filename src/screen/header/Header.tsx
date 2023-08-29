@@ -1,5 +1,6 @@
-import Info from "./info/Info";
-import Title from "./title/Title";
+import type React from "react";
+import { Info } from "./info/Info";
+import { Title } from "./title/Title";
 
 type Props = {
   year: number;
@@ -7,7 +8,7 @@ type Props = {
   setTime: (year: number, month: number) => void;
 };
 
-const Header = ({ year, month, setTime }: Props) => {
+export const Header: React.FC<Props> = ({ year, month, setTime }) => {
   return (
     <div className="header" key="header">
       <Title setTime={setTime} />
@@ -15,5 +16,3 @@ const Header = ({ year, month, setTime }: Props) => {
     </div>
   );
 };
-
-export default Header;
