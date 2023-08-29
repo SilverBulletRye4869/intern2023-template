@@ -21,6 +21,6 @@
       "~/*": ["src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "src/screen/Screen.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
