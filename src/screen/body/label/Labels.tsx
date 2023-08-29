@@ -1,6 +1,6 @@
 import { Box } from "@chakra-ui/react";
 
-const Labels = () => {
+export const Labels = () => {
   return (
     <Box className="labels">
       {["日", "月", "火", "水", "木", "金", "土"].map((day, i) => {
@@ -13,5 +13,3 @@ const Labels = () => {
     </Box>
   );
 };
-
-export default Labels;
