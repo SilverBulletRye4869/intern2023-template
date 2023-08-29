@@ -1,14 +1,16 @@
+import { Box } from "@chakra-ui/react";
+
 const Labels = () => {
   return (
-    <div className="labels">
+    <Box className="labels">
       {["日", "月", "火", "水", "木", "金", "土"].map((day, i) => {
         return (
-          <>
-            <p className={`label row${i}`}>{day}</p>
-          </>
+          <Box className={`label row${i}`} key={`row_${i}`}>
+            {day}
+          </Box>
         );
       })}
-    </div>
+    </Box>
   );
 };
 
