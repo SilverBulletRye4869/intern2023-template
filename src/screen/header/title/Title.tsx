@@ -66,7 +66,7 @@ export const Title: React.FC<Props> = ({
             <PopoverHeader>
               <Box display="flex">
                 <Box height="4em" width="auto">
-                  <img src={userIconUrl} className="icon" />
+                  <img src={userIconUrl} className="menu_icon" />
                 </Box>
                 <Box textAlign="left" marginLeft="2em">
                   <Box fontSize="1.5em">{userName}</Box>
@@ -78,10 +78,10 @@ export const Title: React.FC<Props> = ({
             </PopoverHeader>
             <PopoverBody>
               <Button
-                height="1.5em"
+                height="100%"
                 fontSize="1em"
-                width="6.5em"
-                backgroundColor="#ffc0cb"
+                width="100%"
+                backgroundColor="#fff"
                 onClick={handleClickSignOut}
               >
                 サインアウト
