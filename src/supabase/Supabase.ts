@@ -14,6 +14,8 @@ export class Supabase {
   private mailAddress= "";
   private iconUrl = "";
 
+  private usedProvider = "";
+
   constructor() {
     const url: string = import.meta.env.VITE_PROJECT_URL as string;
     const key: string = import.meta.env.VITE_PROJECT_KEY as string;
@@ -86,10 +88,11 @@ export class Supabase {
       .eq("scheduleId", uid)
       .select();
 
-  public signIn = async () => {
-    this.userId = "";
+  public signIn = async (provider : 'google' | 'discord') => {
+    this.userId = this.userName = this.mailAddress = "";
+    this.usedProvider = provider as string;
     await this.SUPABASE.auth.signInWithOAuth({
-      provider: "google",
+      provider: provider,
       options: {
         queryParams: {
           access_type: "offline",
@@ -108,19 +111,21 @@ export class Supabase {
   public getUserId = async (): Promise<string | undefined> => {
     if (this.userId != "") return this.userId;
     const { data} = await this.SUPABASE.auth.getSession();
-    /*
-    console.log(data);
+
+    
+    console.log(data);/*
     console.log(data.session);
     console.log(data.session?.user);
     console.log(data.session?.user.id);*/
-    this.userId = data.session?.user.id ?? "";
+    this.userId =  data.session?.user.id ?? "";
+    
     return this.userId;
   };
 
   public getUserName = async (): Promise<string | undefined > =>{
     if(this.userName!="")return this.userName;
     const { data} = await this.SUPABASE.auth.getSession();
-    this.userName = data.session?.user.user_metadata.full_name as string;
+    this.userName =await data.session?.user.user_metadata.full_name as string;
     return this.userName;
   }
 
@@ -128,7 +133,8 @@ export class Supabase {
     if(this.mailAddress!="")return this.mailAddress;
     const { data} = await this.SUPABASE.auth.getSession();
     
-    this.mailAddress = data.session?.user.email as string;
+    this.mailAddress  = data.session?.user.email as string;
+    
     return this.mailAddress;
   }
 

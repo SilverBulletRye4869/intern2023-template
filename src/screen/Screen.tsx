@@ -127,8 +127,8 @@ export const Screen: React.FC = () => {
 
   //===================================================== Supabase
 
-  const signIn = (): void => {
-    void supabase.signIn();
+  const signIn = (provider: "google" | "discord"): void => {
+    void supabase.signIn(provider);
   };
 
   const signOut = async (): Promise<boolean> => {
@@ -143,6 +143,7 @@ export const Screen: React.FC = () => {
     setUserId(id);
 
     const name: string | undefined = await supabase.getUserName();
+    console.log(supabase.getUserName());
     if (!name) return;
     setUserName(name);
 
