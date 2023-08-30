@@ -1,18 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useEffect, useState, useCallback } from "react";
 
 import { Header } from "./header/Header";
 import { Body } from "./body/Body";
 import type { Schedule, ScheduleTable } from "~/@types/schedule";
 import { Supabase } from "~/supabase/Supabase";
-import type { Session } from "@supabase/supabase-js";
-import { Button } from "@chakra-ui/react";
+import { SignIn } from "./signin/Signin";
+import { OfflineWarning } from "./offlineWarning/OfflineWarning";
 
 const HOLIDAY_API = "https://holidays-jp.github.io/api/v1/date.json";
 
 let isHolidayLoaded = false;
+const supabase = new Supabase();
 
 export const Screen: React.FC = () => {
   const isOnline = window.navigator.onLine;
@@ -21,9 +19,8 @@ export const Screen: React.FC = () => {
   const [year, setYear] = useState(date.getFullYear());
   const [month, setMonth] = useState(date.getMonth());
 
-  const supabase = new Supabase();
-
   const [userId, setUserId] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
 
   const setTime = (newYear: number, newMonth: number): void => {
     while (newMonth < 0) {
@@ -120,16 +117,28 @@ export const Screen: React.FC = () => {
   }, [holidayLoad, isOnline]);
 
   void (async () => {
+    console.log("tets");
+    if (supabase == null || userName != "") return;
     const id: string | undefined = await supabase.getUserId();
     if (!id) return;
     setUserId(id);
+    const name: string | undefined = await supabase.getUserName();
+    if (!name) return;
+    setUserName(name);
   })();
 
   return (
     <div className="screen">
-      {userId ? (
+      {userId || !isOnline ? (
         <>
-          <Header year={year} month={month} setTime={setTime} />
+          {!isOnline ? <OfflineWarning /> : ""}
+          <Header
+            year={year}
+            month={month}
+            setTime={setTime}
+            userName={userName}
+            supabase={supabase}
+          />
           <Body
             year={year}
             month={month}
@@ -141,7 +150,7 @@ export const Screen: React.FC = () => {
           />
         </>
       ) : (
-        <Button onClick={supabase.signIn}>サインイン</Button>
+        <SignIn supabase={supabase} />
       )}
     </div>
   );

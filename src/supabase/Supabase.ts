@@ -1,6 +1,5 @@
 import type {
   PostgrestSingleResponse,
-  Session,
   SupabaseClient,
 } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
@@ -11,6 +10,9 @@ export class Supabase {
   static TABLE_NAME = "schedules";
   private SUPABASE: SupabaseClient;
   private userId = "";
+  private userName = "";
+  private mailAddress= "";
+  private iconUrl = "";
 
   constructor() {
     const url: string = import.meta.env.VITE_PROJECT_URL as string;
@@ -23,17 +25,19 @@ export class Supabase {
     year: number,
     month: number
   ): Promise<PostgrestSingleResponse<SupabaseResponse[]>> => {
-    console.log("a id:" + this.userId);
-    return await this.SUPABASE.from(Supabase.TABLE_NAME)
+    const res =await this.SUPABASE.from(Supabase.TABLE_NAME)
       .select("*")
-      .eq("userId", await this.getUserId())
+      .eq("userId", this.userId)
       .gte("date", `${year}-${`0${month + 1}`.slice(-2)}-01`)
       .lte(
         "date",
         `${month == 11 ? year + 1 : year}-${`0${
           month == 11 ? 0 : month + 2
         }`.slice(-2)}-01`
-      );
+      )
+      .select();
+
+    return res;
   };
 
   public regisisterSchedule = async (
@@ -86,7 +90,7 @@ export class Supabase {
   public signIn = async () => {
     this.userId = "";
     await this.SUPABASE.auth.signInWithOAuth({
-      provider: "discord",
+      provider: "google",
       options: {
         queryParams: {
           access_type: "offline",
@@ -96,17 +100,48 @@ export class Supabase {
     });
   };
 
+  public signOut = async (): Promise<boolean> =>{
+    this.userId = this.userName = this.mailAddress = "";
+    const {error} = await this.SUPABASE.auth.signOut();
+    return error==null;
+  }
+
   public getUserId = async (): Promise<string | undefined> => {
     if (this.userId != "") return this.userId;
-    const { data, error } = await this.SUPABASE.auth.getSession();
-    /*
-    console.log(data);
+    const { data} = await this.SUPABASE.auth.getSession();
+    
+    console.log(data);/*
     console.log(data.session);
     console.log(data.session?.user);
     console.log(data.session?.user.id);*/
     this.userId = data.session?.user.id ?? "";
     return this.userId;
   };
+
+  public getUserName = async (): Promise<string | undefined > =>{
+    if(this.userName!="")return this.userName;
+    const { data} = await this.SUPABASE.auth.getSession();
+    this.userName = data.session?.user.user_metadata.full_name as string;
+    return this.userName;
+  }
+
+  public getMailAddress = async (): Promise<string | undefined > =>{
+    if(this.mailAddress!="")return this.mailAddress;
+    const { data} = await this.SUPABASE.auth.getSession();
+    
+    this.mailAddress = data.session?.user.email as string;
+    return this.mailAddress;
+  }
+
+  public getIconUrl = async() =>{
+    if(this.iconUrl!="")return this.iconUrl;
+    const {data} = await this.SUPABASE.auth.getSession();
+    const url: string = data.session?.user.user_metadata.avatar_url as string;
+    const res: Response = await fetch(url);
+    const blob: Blob = await res.blob();
+    this.iconUrl= (window.URL || window.webkitURL).createObjectURL(blob)
+    return this.iconUrl;
+  }
 
   public getClient = (): SupabaseClient => {
     return this.SUPABASE;

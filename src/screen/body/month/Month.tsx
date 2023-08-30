@@ -6,7 +6,7 @@ type Props = {
   year: number;
   month: number;
   scheduleTables: ScheduleTable[];
-  supabase: Supabase;
+  supabase: Supabase | null;
   save: (
     uid: number,
     thisTitle: string,
@@ -44,11 +44,13 @@ export const Month: React.FC<Props> = ({
   );
 
   const getSchedules = useCallback(async (): Promise<void> => {
+    if (supabase == null) return;
     loadedMonth.push(getDateAsString());
+    console.log(`${year}-${month}`);
     const { data } = await supabase.getSchedules(year, month);
+    console.log("fine");
     if (data == null) return;
-
-    console.log(data);
+    console.log("testt");
     data.forEach((e) => {
       save(
         e.scheduleId,

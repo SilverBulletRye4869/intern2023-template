@@ -30,7 +30,7 @@ type Props = {
   day: number;
   row: number;
   scheduleTables: ScheduleTable[];
-  supabase: Supabase;
+  supabase: Supabase | null;
   save: (
     uid: number,
     thisTitle: string,
@@ -73,7 +73,6 @@ export const Day: React.FC<Props> = ({
     },
     [isFormOpen]
   );
-
   useEffect((): void => {
     if (isFormOpen) return;
     onHover(day, false);
@@ -82,6 +81,7 @@ export const Day: React.FC<Props> = ({
 
   const register = async (): Promise<void> => {
     //db保存の処理
+    if (supabase == null) return;
     const targetDate: number[] = date.split("-").map((s) => parseInt(s));
     const res: PostgrestSingleResponse<SupabaseResponse[]> =
       await supabase.regisisterSchedule(title, targetDate, start, end, memo);
@@ -91,6 +91,7 @@ export const Day: React.FC<Props> = ({
   };
 
   const update = async (schedule?: Schedule): Promise<void> => {
+    if (supabase == null) return;
     if (!schedule) {
       void register();
       return;
@@ -119,6 +120,7 @@ export const Day: React.FC<Props> = ({
   };
 
   const deleter = async (uid: number, id: number): Promise<void> => {
+    if (supabase == null) return;
     await supabase.deleteSchedule(uid);
     const tableIndex = getTableIndex(year, month, day);
     if (tableIndex == -1) return;
@@ -181,7 +183,7 @@ export const Day: React.FC<Props> = ({
     today.getDate() == day;
 
   const index = getTableIndex(year, month, day);
-
+  console.log(`${year} - ${month} - ${day}`);
   return (
     <Box
       className={`day row${

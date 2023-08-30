@@ -8,7 +8,7 @@ type Props = {
   start: number;
   end: number;
   scheduleTables: ScheduleTable[];
-  supabase: Supabase;
+  supabase: Supabase | null;
   save: (
     uid: number,
     thisTitle: string,
@@ -34,6 +34,7 @@ export const Week: React.FC<Props> = ({
 }) => {
   const loop = new Array(7).fill(0);
   let day = start;
+
   return (
     <div className="week">
       {loop.map((_, i) => {

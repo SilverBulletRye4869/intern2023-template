@@ -2,12 +2,11 @@ import { Labels } from "./label/Labels";
 import { Month } from "./month/Month";
 import type { ScheduleTable } from "~/@types/schedule.js";
 import type { Supabase } from "~/supabase/Supabase";
-import { OfflineWarning } from "./OfflineWarning/OfflineWarning";
 type Props = {
   year: number;
   month: number;
   scheduleTables: ScheduleTable[];
-  supabase: Supabase;
+  supabase: Supabase | null;
   save: (
     uid: number,
     thisTitle: string,
@@ -41,7 +40,6 @@ export const Body: React.FC<Props> = ({
         getTableIndex={getTableIndex}
         isOnline={isOnline}
       />
-      {!isOnline ? <OfflineWarning /> : ""}
     </div>
   );
 };
