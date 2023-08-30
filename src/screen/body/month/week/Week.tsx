@@ -1,6 +1,5 @@
 import { Day } from "./day/Day";
-import type { ScheduleTable } from "~/@types/schedule.js";
-import type { Supabase } from "~/supabase/Supabase";
+import type { Schedule, ScheduleTable } from "~/@types/schedule.js";
 
 type Props = {
   year: number;
@@ -8,17 +7,17 @@ type Props = {
   start: number;
   end: number;
   scheduleTables: ScheduleTable[];
-  supabase: Supabase | null;
-  save: (
-    uid: number,
-    thisTitle: string,
-    thisDate: number[],
-    thisStart: string,
-    thisEnd: string,
-    thisMemo: string
-  ) => void;
   getTableIndex: (year: number, month: number, day: number) => number;
   isOnline: boolean;
+  registerToSupabase: (
+    title: string,
+    date: number[],
+    start: string,
+    end: string,
+    memo: string
+  ) => Promise<void>;
+  updateOnSupabase: (schedule: Schedule) => void;
+  deleteFromSupabase: (uid: number) => void;
 };
 
 export const Week: React.FC<Props> = ({
@@ -27,10 +26,11 @@ export const Week: React.FC<Props> = ({
   start,
   end,
   scheduleTables,
-  supabase,
-  save,
   getTableIndex,
   isOnline,
+  registerToSupabase,
+  updateOnSupabase,
+  deleteFromSupabase,
 }) => {
   const loop = new Array(7).fill(0);
   let day = start;
@@ -47,10 +47,11 @@ export const Week: React.FC<Props> = ({
             day={day}
             row={i}
             scheduleTables={scheduleTables}
-            supabase={supabase}
-            save={save}
             getTableIndex={getTableIndex}
             isOnline={isOnline}
+            registerToSupabase={registerToSupabase}
+            updateOnSupabase={updateOnSupabase}
+            deleteFromSupabase={deleteFromSupabase}
           />
         );
       })}

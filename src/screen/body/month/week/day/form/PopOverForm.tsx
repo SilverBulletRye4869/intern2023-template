@@ -16,7 +16,7 @@ import type { Schedule } from "~/@types/schedule";
 type Props = {
   boxTitle: React.ReactNode;
   schedule: Schedule | null;
-  updateFunc: (schedule?: Schedule) => Promise<void>;
+  updateFunc: (schedule?: Schedule) => void;
   title: string;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
   date: string;

@@ -1,19 +1,19 @@
 import { Box, Button, Center, Text } from "@chakra-ui/react";
-import type { Supabase } from "~/supabase/Supabase";
-
 type Props = {
-  supabase: Supabase | null;
+  signIn: () => void;
 };
 
-export const SignIn: React.FC<Props> = ({ supabase }) => {
-  if (supabase == null) return <></>;
+export const SignIn: React.FC<Props> = ({ signIn }) => {
+  const handleClickSignIn = () => {
+    signIn();
+  };
   return (
     <Center width="100%" height="100%">
       <Box w="250px" height="auto" backgroundColor="#f2f2f2">
         <Text fontSize="2em">サインイン</Text>
         <br />
         <Button
-          onClick={supabase.signIn}
+          onClick={handleClickSignIn}
           borderRadius="0"
           marginBottom="30px"
           backgroundColor="#c3c3c3"

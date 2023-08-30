@@ -1,14 +1,16 @@
 import type React from "react";
 import { Info } from "./info/Info";
 import { Title } from "./title/Title";
-import type { Supabase } from "~/supabase/Supabase";
 
 type Props = {
   year: number;
   month: number;
   setTime: (year: number, month: number) => void;
   userName: string;
-  supabase: Supabase | null;
+  userAddress: string;
+  userIconUrl: string;
+  isOnline: boolean;
+  signOut: () => Promise<boolean>;
 };
 
 export const Header: React.FC<Props> = ({
@@ -16,11 +18,21 @@ export const Header: React.FC<Props> = ({
   month,
   setTime,
   userName,
-  supabase,
+  userAddress,
+  userIconUrl,
+  isOnline,
+  signOut,
 }) => {
   return (
     <div className="header" key="header">
-      <Title setTime={setTime} userName={userName} supabase={supabase} />
+      <Title
+        setTime={setTime}
+        userName={userName}
+        userAddress={userAddress}
+        userIconUrl={userIconUrl}
+        isOnline={isOnline}
+        signOut={signOut}
+      />
       <Info year={year} month={month} setTime={setTime} />
     </div>
   );

@@ -6,10 +6,14 @@ import type { Schedule, ScheduleTable } from "~/@types/schedule";
 import { Supabase } from "~/supabase/Supabase";
 import { SignIn } from "./signin/Signin";
 import { OfflineWarning } from "./offlineWarning/OfflineWarning";
+import type { PostgrestSingleResponse } from "@supabase/supabase-js";
+import type { SupabaseResponse } from "~/@types/supabase";
 
 const HOLIDAY_API = "https://holidays-jp.github.io/api/v1/date.json";
 
+const loadedMonth: string[] = [];
 let isHolidayLoaded = false;
+
 const supabase = new Supabase();
 
 export const Screen: React.FC = () => {
@@ -21,6 +25,8 @@ export const Screen: React.FC = () => {
 
   const [userId, setUserId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+  const [userAddress, setUserAddress] = useState<string>("");
+  const [userIconUrl, setUserIconUrl] = useState<string>("");
 
   const setTime = (newYear: number, newMonth: number): void => {
     while (newMonth < 0) {
@@ -47,6 +53,7 @@ export const Screen: React.FC = () => {
     [scheduleTables]
   );
 
+  //対変数ほぞん関数
   const save = useCallback(
     (
       uid: number,
@@ -99,6 +106,8 @@ export const Screen: React.FC = () => {
     [getTableIndex, scheduleTables]
   );
 
+  //===================================================== 祝日API
+
   const holidayLoad = useCallback(async (): Promise<void> => {
     const res: Response = await fetch(HOLIDAY_API);
     const data: string = await res.text();
@@ -116,17 +125,98 @@ export const Screen: React.FC = () => {
     void holidayLoad();
   }, [holidayLoad, isOnline]);
 
-  void (async () => {
-    console.log("tets");
-    if (supabase == null || userName != "") return;
+  //===================================================== Supabase
+
+  const signIn = (): void => {
+    void supabase.signIn();
+  };
+
+  const signOut = async (): Promise<boolean> => {
+    return await supabase.signOut();
+  };
+
+  const loadUserInfo = useCallback(async (): Promise<void> => {
+    if (supabase == null) return;
+
     const id: string | undefined = await supabase.getUserId();
     if (!id) return;
     setUserId(id);
+
     const name: string | undefined = await supabase.getUserName();
     if (!name) return;
     setUserName(name);
-  })();
 
+    const address = await supabase.getMailAddress();
+    if (!address) return;
+    setUserAddress(address);
+
+    const url = await supabase.getIconUrl();
+    if (!url) return;
+    setUserIconUrl(url);
+  }, []);
+
+  useEffect(() => {
+    void loadUserInfo();
+  }, [loadUserInfo]);
+
+  const registerToSupabase = async (
+    title: string,
+    date: number[],
+    start: string,
+    end: string,
+    memo: string
+  ): Promise<void> => {
+    if (supabase == null) return;
+    const res: PostgrestSingleResponse<SupabaseResponse[]> =
+      await supabase.regisisterSchedule(title, date, start, end, memo);
+    const scheduleId = res && res.data ? res.data[0].scheduleId : -1;
+    save(scheduleId, title, date, start, end, memo);
+  };
+
+  const updateOnSupabase = (schedule: Schedule): void => {
+    if (supabase == null) return;
+    void supabase.updateSchedule(
+      schedule.uid,
+      schedule.title,
+      schedule.start,
+      schedule.end,
+      schedule.memo
+    );
+  };
+
+  const deleteFromSupabase = (uid: number): void => {
+    if (supabase == null) return;
+    void supabase.deleteSchedule(uid);
+  };
+
+  const getDateAsString = (targetYear: number, targetMonth: number): string =>
+    `${targetYear}-${targetMonth}`;
+
+  const loadSchedules = async (
+    targetYear: number,
+    targetMonth: number
+  ): Promise<void> => {
+    if (
+      supabase == null ||
+      loadedMonth.indexOf(getDateAsString(targetYear, targetMonth)) >= 0
+    )
+      return;
+    loadedMonth.push(getDateAsString(targetYear, targetMonth));
+    const { data } = await supabase.getSchedules(year, month);
+    if (data == null) return;
+    data.forEach((e) => {
+      save(
+        e.scheduleId,
+        e.title,
+        e.date.split("-").map((s: string) => parseInt(s)),
+        e.startTime != undefined ? e.startTime.slice(0, -3) : "",
+        e.endTime != undefined ? e.endTime.slice(0, -3) : "",
+        e.memo
+      );
+    });
+  };
+
+  //===================================================== JSX
   return (
     <div className="screen">
       {userId || !isOnline ? (
@@ -137,20 +227,25 @@ export const Screen: React.FC = () => {
             month={month}
             setTime={setTime}
             userName={userName}
-            supabase={supabase}
+            userAddress={userAddress}
+            userIconUrl={userIconUrl}
+            isOnline={isOnline}
+            signOut={signOut}
           />
           <Body
             year={year}
             month={month}
             scheduleTables={scheduleTables}
-            supabase={supabase}
-            save={save}
             getTableIndex={getTableIndex}
             isOnline={isOnline}
+            registerToSupabase={registerToSupabase}
+            updateOnSupabase={updateOnSupabase}
+            deleteFromSupabase={deleteFromSupabase}
+            loadSchedules={loadSchedules}
           />
         </>
       ) : (
-        <SignIn supabase={supabase} />
+        <SignIn signIn={signIn} />
       )}
     </div>
   );

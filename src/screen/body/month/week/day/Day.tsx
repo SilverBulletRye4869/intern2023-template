@@ -20,27 +20,23 @@ import {
   CalendarIcon,
 } from "@chakra-ui/icons";
 import type { Schedule, ScheduleTable } from "~/@types/schedule.js";
-import type { Supabase } from "~/supabase/Supabase";
-import type { PostgrestSingleResponse } from "@supabase/supabase-js";
-import type { SupabaseResponse } from "~/@types/supabase";
-
 type Props = {
   year: number;
   month: number;
   day: number;
   row: number;
   scheduleTables: ScheduleTable[];
-  supabase: Supabase | null;
-  save: (
-    uid: number,
-    thisTitle: string,
-    thisDate: number[],
-    thisStart: string,
-    thisEnd: string,
-    thisMemo: string
-  ) => void;
   getTableIndex: (year: number, month: number, day: number) => number;
   isOnline: boolean;
+  registerToSupabase: (
+    title: string,
+    date: number[],
+    start: string,
+    end: string,
+    memo: string
+  ) => Promise<void>;
+  updateOnSupabase: (schedule: Schedule) => void;
+  deleteFromSupabase: (uid: number) => void;
 };
 
 //const scheduleTables: ScheduleTable[] = [];
@@ -50,10 +46,11 @@ export const Day: React.FC<Props> = ({
   day,
   row,
   scheduleTables,
-  supabase,
-  save,
   getTableIndex,
   isOnline,
+  registerToSupabase,
+  updateOnSupabase,
+  deleteFromSupabase,
 }) => {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -73,25 +70,20 @@ export const Day: React.FC<Props> = ({
     },
     [isFormOpen]
   );
+
   useEffect((): void => {
     if (isFormOpen) return;
     onHover(day, false);
     return;
   }, [day, isFormOpen, onHover]);
 
-  const register = async (): Promise<void> => {
+  const register = (): void => {
     //db保存の処理
-    if (supabase == null) return;
     const targetDate: number[] = date.split("-").map((s) => parseInt(s));
-    const res: PostgrestSingleResponse<SupabaseResponse[]> =
-      await supabase.regisisterSchedule(title, targetDate, start, end, memo);
-    const scheduleId = res && res.data ? res.data[0].scheduleId : -1;
-    if (scheduleId == 0) return;
-    save(scheduleId, title, targetDate, start, end, memo);
+    void registerToSupabase(title, targetDate, start, end, memo);
   };
 
-  const update = async (schedule?: Schedule): Promise<void> => {
-    if (supabase == null) return;
+  const update = (schedule?: Schedule): void => {
     if (!schedule) {
       void register();
       return;
@@ -113,15 +105,13 @@ export const Day: React.FC<Props> = ({
     schedule.start = start;
     schedule.end = end;
     schedule.memo = memo;
-    await supabase.updateSchedule(schedule.uid, title, start, end, memo);
-
+    updateOnSupabase(schedule);
     initValue();
     return;
   };
 
-  const deleter = async (uid: number, id: number): Promise<void> => {
-    if (supabase == null) return;
-    await supabase.deleteSchedule(uid);
+  const deleter = (uid: number, id: number): void => {
+    deleteFromSupabase(uid);
     const tableIndex = getTableIndex(year, month, day);
     if (tableIndex == -1) return;
     const scheIndex = scheduleTables[tableIndex].schedules.findIndex(
@@ -183,7 +173,6 @@ export const Day: React.FC<Props> = ({
     today.getDate() == day;
 
   const index = getTableIndex(year, month, day);
-  console.log(`${year} - ${month} - ${day}`);
   return (
     <Box
       className={`day row${

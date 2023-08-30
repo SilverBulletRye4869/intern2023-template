@@ -47,7 +47,6 @@ export class Supabase {
     end: string | null = null,
     memo: string | null = null
   ): Promise<PostgrestSingleResponse<SupabaseResponse[]>> => {
-    console.log(this.getUserId());
     return await this.SUPABASE.from(Supabase.TABLE_NAME)
       .insert({
         userId: await this.getUserId(),
@@ -76,7 +75,7 @@ export class Supabase {
         endTime: end ? end + ":00" : null,
         memo: memo,
       })
-      .eq("sche_id", uid)
+      .eq("scheduleId", uid)
       .select();
 
   public deleteSchedule = async (
@@ -84,7 +83,7 @@ export class Supabase {
   ): Promise<PostgrestSingleResponse<SupabaseResponse[]>> =>
     await this.SUPABASE.from(Supabase.TABLE_NAME)
       .delete()
-      .eq("sche_id", uid)
+      .eq("scheduleId", uid)
       .select();
 
   public signIn = async () => {
@@ -109,8 +108,8 @@ export class Supabase {
   public getUserId = async (): Promise<string | undefined> => {
     if (this.userId != "") return this.userId;
     const { data} = await this.SUPABASE.auth.getSession();
-    
-    console.log(data);/*
+    /*
+    console.log(data);
     console.log(data.session);
     console.log(data.session?.user);
     console.log(data.session?.user.id);*/

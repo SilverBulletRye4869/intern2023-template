@@ -11,43 +11,35 @@ import {
   PopoverHeader,
   PopoverBody,
 } from "@chakra-ui/react";
-import type { Supabase } from "~/supabase/Supabase";
-import { useState } from "react";
 type Props = {
   setTime: (year: number, month: number) => void;
   userName: string;
-  supabase: Supabase | null;
+  userAddress: string;
+  userIconUrl: string;
+  isOnline: boolean;
+  signOut: () => Promise<boolean>;
 };
 
-export const Title: React.FC<Props> = ({ setTime, userName, supabase }) => {
+export const Title: React.FC<Props> = ({
+  setTime,
+  userName,
+  userAddress,
+  userIconUrl,
+  isOnline,
+  signOut,
+}) => {
   const date: Date = new Date();
-
-  const [mailAddress, setMailAddress] = useState<string>("---@gmail.com");
-  const [iconUrl, setIconUrl] = useState("");
 
   const handleClickSetTime = () => setTime(date.getFullYear(), date.getMonth());
 
   const handleClickSignOut = async () => {
-    if (supabase == null) return;
-    const res: boolean = await supabase.signOut();
-    console.log(`SignOut-Successed: ${res.toString()}`);
+    const res: boolean = await signOut();
+    if (!res) return;
     window.location.reload();
     return;
   };
 
-  void (async () => {
-    if (supabase == null) return;
-    const res = await supabase.getMailAddress();
-    if (!res) return;
-    setMailAddress(res);
-  })();
-
-  void (async () => {
-    if (supabase == null) return;
-    const res = await supabase.getIconUrl();
-    if (!res) return;
-    setIconUrl(res);
-  })();
+  //useEffecttukau
 
   return (
     <Box display="flex" flex="left" verticalAlign="center">
@@ -56,7 +48,7 @@ export const Title: React.FC<Props> = ({ setTime, userName, supabase }) => {
         {"　"}
         Calender
       </button>
-      {supabase ? (
+      {isOnline ? (
         <Popover>
           <PopoverTrigger>
             <Button
@@ -74,12 +66,12 @@ export const Title: React.FC<Props> = ({ setTime, userName, supabase }) => {
             <PopoverHeader>
               <Box display="flex">
                 <Box height="4em" width="auto">
-                  <img src={iconUrl} className="icon" />
+                  <img src={userIconUrl} className="icon" />
                 </Box>
                 <Box textAlign="left" marginLeft="2em">
                   <Box fontSize="1.5em">{userName}</Box>
                   <Box fontSize="0.75em" color="gray" marginTop="0.75em">
-                    {mailAddress}
+                    {userAddress}
                   </Box>
                 </Box>
               </Box>
