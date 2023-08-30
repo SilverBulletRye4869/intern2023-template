@@ -208,6 +208,14 @@ button:focus-visible {
 }
 
 
-.icon{
+.menu_icon {
   height:100%;
 }
+
+.signIn_icon{
+  width: 2em;
+  height:2em;
+  border-radius: 50%;
+}
+
+
