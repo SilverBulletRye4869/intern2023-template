@@ -112,11 +112,6 @@ export class Supabase {
     if (this.userId != "") return this.userId;
     const { data} = await this.SUPABASE.auth.getSession();
 
-    
-    console.log(data);/*
-    console.log(data.session);
-    console.log(data.session?.user);
-    console.log(data.session?.user.id);*/
     this.userId =  data.session?.user.id ?? "";
     
     return this.userId;

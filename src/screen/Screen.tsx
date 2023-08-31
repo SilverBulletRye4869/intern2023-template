@@ -28,6 +28,7 @@ export const Screen: React.FC = () => {
   const [userAddress, setUserAddress] = useState<string>("");
   const [userIconUrl, setUserIconUrl] = useState<string>("");
 
+  //年月を設定する
   const setTime = (newYear: number, newMonth: number): void => {
     while (newMonth < 0) {
       newYear--;
@@ -41,6 +42,7 @@ export const Screen: React.FC = () => {
     setMonth(newMonth);
   };
 
+  //scheduleTablesからindex番号を取得する
   const getTableIndex = useCallback(
     (year: number, month: number, day: number): number => {
       return scheduleTables.findIndex(
@@ -143,7 +145,6 @@ export const Screen: React.FC = () => {
     setUserId(id);
 
     const name: string | undefined = await supabase.getUserName();
-    console.log(supabase.getUserName());
     if (!name) return;
     setUserName(name);
 
