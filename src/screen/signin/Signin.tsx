@@ -1,5 +1,6 @@
 import { Box, Button, Center, Text } from "@chakra-ui/react";
 import { WarningTwoIcon } from "@chakra-ui/icons";
+
 type Props = {
   signIn: (provider: "google" | "discord") => void;
 };
@@ -21,10 +22,7 @@ export const SignIn: React.FC<Props> = ({ signIn }) => {
         backgroundColor="#c3c3c3"
         width="200px"
       >
-        <img
-          src={`src/img/${provider as string}.png`}
-          className="signIn_icon"
-        />
+        <img src={`/${provider as string}.png`} className="signIn_icon" />
         {text}
       </Button>
     );
