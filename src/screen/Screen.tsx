@@ -11,13 +11,15 @@ import type { SupabaseResponse } from "~/@types/supabase";
 
 const HOLIDAY_API = "https://holidays-jp.github.io/api/v1/date.json";
 
+const MIN_YEAR = 100;
+
 const loadedMonth: string[] = [];
 let isHolidayLoaded = false;
 
 const supabase = new Supabase();
 
 export const Screen: React.FC = () => {
-  const isOnline = window.navigator.onLine;
+  const isOnline = window.navigator.onLine; // && false;
   const [scheduleTables, setScheduleTables] = useState<ScheduleTable[]>([]);
   const date = new Date();
   const [year, setYear] = useState(date.getFullYear());
@@ -31,7 +33,7 @@ export const Screen: React.FC = () => {
   //年月を設定する
   const setTime = (newYear: number, newMonth: number): void => {
     while (newMonth < 0) {
-      newYear--;
+      newYear = Math.max(MIN_YEAR, newYear - 1);
       newMonth += 12;
     }
     while (newMonth > 11) {

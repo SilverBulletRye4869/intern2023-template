@@ -9,7 +9,9 @@ import {
   PopoverHeader,
   PopoverCloseButton,
   PopoverBody,
+  PopoverFooter,
 } from "@chakra-ui/react";
+import { Form } from "./form/Form";
 
 type Props = {
   year: number;
@@ -59,6 +61,7 @@ export const Info: React.FC<Props> = ({ year, month, setTime }) => {
                   className="year_button"
                   backgroundColor="#ade2d1"
                   onClick={handleClickOldYear}
+                  disabled={year == 100}
                 >
                   {year - 1}年
                 </Button>
@@ -93,6 +96,9 @@ export const Info: React.FC<Props> = ({ year, month, setTime }) => {
                 })}
               </Box>
             </PopoverBody>
+            <PopoverFooter>
+              <Form year={year} month={month} setTime={setTime} />
+            </PopoverFooter>
           </PopoverContent>
         </Portal>
       </Popover>
