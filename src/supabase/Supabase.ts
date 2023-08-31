@@ -34,7 +34,7 @@ export class Supabase {
       .lte(
         "date",
         `${month == 11 ? year + 1 : year}-${`0${
-          month == 11 ? 0 : month + 2
+          month == 11 ? 1 : month + 2
         }`.slice(-2)}-01`
       )
       .select();
