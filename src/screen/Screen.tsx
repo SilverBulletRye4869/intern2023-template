@@ -3,7 +3,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Header } from "./header/Header";
 import { Body } from "./body/Body";
 import type { Schedule, ScheduleTable } from "~/@types/schedule";
-import { Providers, Supabase } from "~/supabase/Supabase";
+import type { Providers } from "~/supabase/Supabase";
+import { Supabase } from "~/supabase/Supabase";
 import { SignIn } from "./signin/Signin";
 import { OfflineWarning } from "./offlineWarning/OfflineWarning";
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
@@ -19,7 +20,7 @@ let isHolidayLoaded = false;
 const supabase = new Supabase();
 
 export const Screen: React.FC = () => {
-  const isOnline = window.navigator.onLine; // && false;
+  const isOnline = window.navigator.onLine && false;
   const [scheduleTables, setScheduleTables] = useState<ScheduleTable[]>([]);
   const date = new Date();
   const [year, setYear] = useState(date.getFullYear());

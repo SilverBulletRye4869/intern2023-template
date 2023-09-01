@@ -219,3 +219,14 @@ button:focus-visible {
 }
 
 
+.noDay{
+  background-color: #eee;
+}
+
+.noDay.row0{
+  background-color: #f6e4e6;
+}
+
+.noDay.row6{
+  background-color: #d8ecf0;
+}

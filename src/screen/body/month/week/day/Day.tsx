@@ -177,7 +177,7 @@ export const Day: React.FC<Props> = ({
     <Box
       className={`day row${
         index >= 0 && scheduleTables[index].isHoliday ? 0 : row
-      } ${isToday ? "today" : ""}`}
+      } ${isToday ? "today" : ""} ${day <= 0 ? "noDay" : ""}`}
       id={`${day}`}
       onMouseOver={() => {
         onHover(day, true);
