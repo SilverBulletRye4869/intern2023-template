@@ -1,14 +1,19 @@
-import { Box, Button, Center, Text } from "@chakra-ui/react";
+import { Box, Button, Center, Link, Text } from "@chakra-ui/react";
 import { WarningTwoIcon } from "@chakra-ui/icons";
 
 import type { Providers } from "~/supabase/Supabase";
 type Props = {
   signIn: (provider: Providers) => void;
+  setNoLogin: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const SignIn: React.FC<Props> = ({ signIn }) => {
+export const SignIn: React.FC<Props> = ({ signIn, setNoLogin }) => {
   const handleClickSignIn = (provider: Providers) => {
     signIn(provider);
+  };
+
+  const handleClickNoLogin = () => {
+    setNoLogin(true);
   };
 
   const getButton = (text: string, provider: Providers): JSX.Element => {
@@ -39,6 +44,12 @@ export const SignIn: React.FC<Props> = ({ signIn }) => {
           <Text width="200px">
             異なるプロバイダ間ではデータは共有されません。
           </Text>
+        </Center>
+        <Center fontSize="0.5em" display="flex">
+          <Text>サインインせずに使う場合は</Text>
+          <Link color="blue" onClick={handleClickNoLogin}>
+            こちら
+          </Link>
         </Center>
       </Box>
     </Center>

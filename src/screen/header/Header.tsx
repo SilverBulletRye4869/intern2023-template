@@ -11,6 +11,7 @@ type Props = {
   userIconUrl: string;
   isOnline: boolean;
   signOut: () => Promise<boolean>;
+  isNoLogin: boolean;
 };
 
 export const Header: React.FC<Props> = ({
@@ -22,6 +23,7 @@ export const Header: React.FC<Props> = ({
   userIconUrl,
   isOnline,
   signOut,
+  isNoLogin,
 }) => {
   return (
     <div className="header" key="header">
@@ -32,6 +34,7 @@ export const Header: React.FC<Props> = ({
         userIconUrl={userIconUrl}
         isOnline={isOnline}
         signOut={signOut}
+        isNoLogin={isNoLogin}
       />
       <Info year={year} month={month} setTime={setTime} />
     </div>

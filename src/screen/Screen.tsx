@@ -20,7 +20,9 @@ let isHolidayLoaded = false;
 const supabase = new Supabase();
 
 export const Screen: React.FC = () => {
-  const isOnline = window.navigator.onLine && false;
+  const isOnline = window.navigator.onLine; //&& false;
+
+  const [isNoLogin, setNoLogin] = useState<boolean>(false);
   const [scheduleTables, setScheduleTables] = useState<ScheduleTable[]>([]);
   const date = new Date();
   const [year, setYear] = useState(date.getFullYear());
@@ -172,14 +174,16 @@ export const Screen: React.FC = () => {
     memo: string
   ): Promise<void> => {
     if (supabase == null) return;
-    const res: PostgrestSingleResponse<SupabaseResponse[]> =
-      await supabase.regisisterSchedule(title, date, start, end, memo);
-    const scheduleId = res && res.data ? res.data[0].scheduleId : -1;
+    let res: PostgrestSingleResponse<SupabaseResponse[]> | null = null;
+    if (!isNoLogin)
+      res = await supabase.regisisterSchedule(title, date, start, end, memo);
+    const scheduleId =
+      res && res.data && !isNoLogin ? res.data[0].scheduleId : -1;
     save(scheduleId, title, date, start, end, memo);
   };
 
   const updateOnSupabase = (schedule: Schedule): void => {
-    if (supabase == null) return;
+    if (supabase == null || isNoLogin) return;
     void supabase.updateSchedule(
       schedule.uid,
       schedule.title,
@@ -190,7 +194,7 @@ export const Screen: React.FC = () => {
   };
 
   const deleteFromSupabase = (uid: number): void => {
-    if (supabase == null) return;
+    if (supabase == null || isNoLogin) return;
     void supabase.deleteSchedule(uid);
   };
 
@@ -203,6 +207,7 @@ export const Screen: React.FC = () => {
   ): Promise<void> => {
     if (
       supabase == null ||
+      isNoLogin ||
       loadedMonth.indexOf(getDateAsString(targetYear, targetMonth)) >= 0
     )
       return;
@@ -224,7 +229,7 @@ export const Screen: React.FC = () => {
   //===================================================== JSX
   return (
     <div className="screen">
-      {userId || !isOnline ? (
+      {userId || !isOnline || isNoLogin ? (
         <>
           {!isOnline ? <OfflineWarning /> : ""}
           <Header
@@ -236,6 +241,7 @@ export const Screen: React.FC = () => {
             userIconUrl={userIconUrl}
             isOnline={isOnline}
             signOut={signOut}
+            isNoLogin={isNoLogin}
           />
           <Body
             year={year}
@@ -250,7 +256,7 @@ export const Screen: React.FC = () => {
           />
         </>
       ) : (
-        <SignIn signIn={signIn} />
+        <SignIn signIn={signIn} setNoLogin={setNoLogin} />
       )}
     </div>
   );

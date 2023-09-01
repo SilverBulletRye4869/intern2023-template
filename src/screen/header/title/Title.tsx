@@ -18,6 +18,7 @@ type Props = {
   userIconUrl: string;
   isOnline: boolean;
   signOut: () => Promise<boolean>;
+  isNoLogin: boolean;
 };
 
 export const Title: React.FC<Props> = ({
@@ -27,6 +28,7 @@ export const Title: React.FC<Props> = ({
   userIconUrl,
   isOnline,
   signOut,
+  isNoLogin,
 }) => {
   const date: Date = new Date();
 
@@ -66,10 +68,13 @@ export const Title: React.FC<Props> = ({
             <PopoverHeader>
               <Box display="flex">
                 <Box height="4em" width="auto">
-                  <img src={userIconUrl} className="menu_icon" />
+                  <img
+                    src={isNoLogin ? "/no-img.png" : userIconUrl}
+                    className="menu_icon"
+                  />
                 </Box>
                 <Box textAlign="left" marginLeft="2em">
-                  <Box fontSize="1.5em">{userName}</Box>
+                  <Box fontSize="1.5em">{isNoLogin ? "ゲスト" : userName}</Box>
                   <Box fontSize="0.75em" color="gray" marginTop="0.75em">
                     {userAddress}
                   </Box>
@@ -84,7 +89,7 @@ export const Title: React.FC<Props> = ({
                 backgroundColor="#fff"
                 onClick={handleClickSignOut}
               >
-                サインアウト
+                {isNoLogin ? "サインイン" : "サインアウト"}
               </Button>
             </PopoverBody>
           </PopoverContent>
