@@ -37,6 +37,7 @@ export const Info: React.FC<Props> = ({ year, month, setTime }) => {
   return (
     <Box className="info" key="info">
       <Button
+        disabled={year == 100 && month == 0}
         size="xs"
         color="black"
         fontSize="xm"
