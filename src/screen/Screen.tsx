@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Header } from "./header/Header";
 import { Body } from "./body/Body";
 import type { Schedule, ScheduleTable } from "~/@types/schedule";
-import { Supabase } from "~/supabase/Supabase";
+import { Providers, Supabase } from "~/supabase/Supabase";
 import { SignIn } from "./signin/Signin";
 import { OfflineWarning } from "./offlineWarning/OfflineWarning";
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
@@ -131,7 +131,7 @@ export const Screen: React.FC = () => {
 
   //===================================================== Supabase
 
-  const signIn = (provider: "google" | "discord"): void => {
+  const signIn = (provider: Providers): void => {
     void supabase.signIn(provider);
   };
 

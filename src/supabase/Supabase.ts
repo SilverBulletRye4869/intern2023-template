@@ -6,8 +6,11 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { SupabaseResponse } from "~/@types/supabase";
 
+export type Providers = "google" | "discord" | "github";
+
 export class Supabase {
   static TABLE_NAME = "schedules";
+  
   private SUPABASE: SupabaseClient;
   private userId = "";
   private userName = "";
@@ -88,7 +91,7 @@ export class Supabase {
       .eq("scheduleId", uid)
       .select();
 
-  public signIn = async (provider : 'google' | 'discord') => {
+  public signIn = async (provider : Providers) => {
     this.userId = this.userName = this.mailAddress = "";
     this.usedProvider = provider as string;
     await this.SUPABASE.auth.signInWithOAuth({

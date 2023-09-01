@@ -1,19 +1,17 @@
 import { Box, Button, Center, Text } from "@chakra-ui/react";
 import { WarningTwoIcon } from "@chakra-ui/icons";
 
+import type { Providers } from "~/supabase/Supabase";
 type Props = {
-  signIn: (provider: "google" | "discord") => void;
+  signIn: (provider: Providers) => void;
 };
 
 export const SignIn: React.FC<Props> = ({ signIn }) => {
-  const handleClickSignIn = (provider: "google" | "discord") => {
+  const handleClickSignIn = (provider: Providers) => {
     signIn(provider);
   };
 
-  const getButton = (
-    text: string,
-    provider: "google" | "discord"
-  ): JSX.Element => {
+  const getButton = (text: string, provider: Providers): JSX.Element => {
     return (
       <Button
         onClick={() => handleClickSignIn(provider)}
@@ -35,6 +33,7 @@ export const SignIn: React.FC<Props> = ({ signIn }) => {
         <br />
         {getButton("Sign in with Google", "google")}
         {getButton("Sign in with Discord", "discord")}
+        {getButton("Sign in with Github", "github")}
         <Center marginBottom="30px" color="red" flexFlow="column">
           <WarningTwoIcon />
           <Text width="200px">
